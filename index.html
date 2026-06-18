@@ -470,19 +470,15 @@ input,textarea,select{font-family:inherit;}
     </div>
     <div class="card">
       <div class="card-hd">
-        <h3>✨ AI Post Suggestions</h3>
-        <button class="link-btn" onclick="nav('content')">Generate more</button>
-      </div>
-      <div id="dash-ai-posts">
-        <div class="ai-box mb16" style="padding:12px;">
-          <div class="ai-label">X / Twitter</div>
-          <div style="font-size:13px;line-height:1.6;">CISA just flagged critical infrastructure gaps. This is your reminder: perimeter security alone is not a strategy. Defense in depth means assuming breach. 🛡️ #CyberSecurity #InfoSec</div>
-          <div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-secondary btn-xs" onclick="copyToClip(this)">Copy</button><button class="btn btn-primary btn-xs" onclick="nav('schedule')">Schedule</button></div>
+        <h3>⚡ Smart Post Suggestions</h3>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text3);" id="suggestions-time"></span>
+          <button class="btn btn-ghost btn-xs" onclick="loadSmartSuggestions(true)">↻ Refresh</button>
         </div>
-        <div class="ai-box" style="padding:12px;">
-          <div class="ai-label">LinkedIn</div>
-          <div style="font-size:13px;line-height:1.6;">Hot take: most organizations spend 80% of their security budget on tools and 20% on people. The ratio should be flipped. Here's why human-layer defense matters more than software. 🧵</div>
-          <div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-secondary btn-xs" onclick="copyToClip(this)">Copy</button><button class="btn btn-primary btn-xs" onclick="nav('schedule')">Schedule</button></div>
+      </div>
+      <div id="smart-suggestions">
+        <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <div class="spinner"></div> Analyzing trending stories for best posts...
         </div>
       </div>
     </div>
@@ -602,13 +598,39 @@ input,textarea,select{font-family:inherit;}
     <div id="news-live-feed"><div style="color:var(--text3);font-size:13px;padding:20px;text-align:center;">🌍 Fetching live news from US, Ghana, and around the world...</div></div>
   </div>
 
-  <div class="card">
+  <div class="card mb16">
     <div class="card-hd"><h3>🤖 AI Story Analyzer</h3><span style="font-size:11px;color:var(--text3);">Powered by Claude</span></div>
     <div style="margin-bottom:14px;display:flex;gap:10px;align-items:flex-end;">
       <div style="flex:1;"><label class="form-label">Paste any headline — AI finds your best OffScript angle for it</label><input id="trend-angle" class="input" placeholder="e.g. Ghana election results, US economy, celebrity drama, World Cup..."></div>
       <button class="btn btn-primary" onclick="analyzeTrend()">Analyze</button>
     </div>
     <div id="trend-result" class="ai-box" style="display:none;"></div>
+  </div>
+
+  <!-- CREATOR / STREAMER FEED -->
+  <div class="card">
+    <div class="card-hd">
+      <h3>🎮 Top Creators to Engage & Repost</h3>
+      <button class="btn btn-ghost btn-xs" onclick="loadCreatorFeed()">↻ Refresh</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">These creators are hot right now. Duet, quote tweet, or repost their content to tap into their audience.</div>
+
+    <!-- CATEGORY TABS -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-primary btn-xs" onclick="filterCreators('all',this)">All</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('gaming',this)">🎮 Gaming/Streaming</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('tech',this)">💻 Tech</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('news',this)">📰 News</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('ghana',this)">🇬🇭 Ghana</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('entertainment',this)">🎬 Entertainment</button>
+      <button class="btn btn-ghost btn-xs" onclick="filterCreators('sports',this)">⚽ Sports</button>
+    </div>
+
+    <div id="creator-feed" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="grid-column:span 2;padding:20px;text-align:center;color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <div class="spinner"></div> Loading top creators...
+      </div>
+    </div>
   </div>
 </div>
 
@@ -668,13 +690,17 @@ input,textarea,select{font-family:inherit;}
             <option value="2-3 hashtags only">2-3 only</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="generatePost()">✨ Generate Post</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="generatePost()">✨ Generate Post</button>
+          <button class="btn btn-secondary" onclick="generatePostWithImage()" title="Generate post + find matching image">🖼️ + Image</button>
+        </div>
       </div>
       <div class="card">
         <div class="card-hd"><h3>Generated Post</h3></div>
         <div id="ai-result">
           <div class="empty-state"><div class="es-icon">✍️</div><h3>Ready to write</h3><p>Fill in the details and hit Generate. Claude will write in your brand voice.</p></div>
         </div>
+        <div id="ai-image-result" style="display:none;margin-top:12px;"></div>
       </div>
     </div>
   </div>
@@ -1525,8 +1551,8 @@ function nav(page) {
   document.getElementById('topbar-sub').textContent = sub;
   currentPage = page;
   closeSidebar();
-  if (page === 'dashboard') { initChart(); loadDashboardNews(); }
-  if (page === 'news') loadNewsPage();
+  if (page === 'dashboard') { initChart(); loadDashboardNews(); setTimeout(loadSmartSuggestions, 2000); }
+  if (page === 'news') { loadNewsPage(); setTimeout(loadCreatorFeed, 500); }
   if (page === 'analytics') {
     const saved = JSON.parse(localStorage.getItem('offscript_growth_prev') || '{}');
     if (saved.tt) { const el=document.getElementById('g-tiktok'); if(el) el.value=saved.tt; }
@@ -2285,6 +2311,351 @@ function renderIncomeLog() {
 // monetize nav hook merged into main nav function below
 
 
+
+
+// ════════════════════════════════════════════
+// CREATOR / STREAMER FEED
+// ════════════════════════════════════════════
+
+const CREATORS = [
+  // 🎮 Gaming / Streaming
+  { name:'MrBeast', handle:'@MrBeast', platform:'YouTube/X', cat:'gaming', followers:'300M+', why:'Anything he posts goes viral instantly. React to his videos.', link:'https://x.com/MrBeast', icon:'🎮', hot:true },
+  { name:'Kai Cenat', handle:'@KaiCenat', platform:'TikTok/X', cat:'gaming', followers:'60M+', why:'#1 Twitch streamer, huge Gen Z following. React to his streams.', link:'https://x.com/KaiCenat', icon:'🎮', hot:true },
+  { name:'IShowSpeed', handle:'@IShowSpeed', platform:'YouTube/TikTok', cat:'gaming', followers:'50M+', why:'Wild reactions go viral. Perfect for repost + commentary.', link:'https://x.com/ishowspeed', icon:'🎮', hot:true },
+  { name:'Pokimane', handle:'@pokimane', platform:'TikTok/X', cat:'gaming', followers:'30M+', why:'Big tech + gaming crossover. Good for tech takes.', link:'https://x.com/pokimane', icon:'🎮', hot:false },
+  { name:'Ninja', handle:'@Ninja', platform:'X/YouTube', cat:'gaming', followers:'25M+', why:'OG gamer, great for nostalgia + gaming culture takes.', link:'https://x.com/Ninja', icon:'🎮', hot:false },
+
+  // 💻 Tech / Cybersecurity
+  { name:'Marques Brownlee', handle:'@MKBHD', platform:'YouTube/X', cat:'tech', followers:'20M+', why:'Quote tweet his reviews with your tech take. Massive reach.', link:'https://x.com/MKBHD', icon:'💻', hot:true },
+  { name:'Linus Tech Tips', handle:'@LinusTech', platform:'YouTube/X', cat:'tech', followers:'15M+', why:'Tech education crossover. Perfect audience for OffScript.', link:'https://x.com/linustech', icon:'💻', hot:false },
+  { name:'NetworkChuck', handle:'@NetWorkChuck', platform:'YouTube/TikTok', cat:'tech', followers:'5M+', why:'Cybersecurity + networking. Same audience as you. Engage daily.', link:'https://x.com/networkchuck', icon:'💻', hot:true },
+  { name:'David Bombal', handle:'@davidbombal', platform:'YouTube/LinkedIn', cat:'tech', followers:'3M+', why:'Big cybersecurity educator. Comment on his content = huge visibility.', link:'https://x.com/davidbombal', icon:'💻', hot:false },
+
+  // 📰 News / Commentary
+  { name:'CNN Breaking News', handle:'@cnnbrk', platform:'X', cat:'news', followers:'65M+', why:'React to breaking news the moment they post. First mover = reach.', link:'https://x.com/cnnbrk', icon:'📰', hot:true },
+  { name:'Phillip DeFranco', handle:'@PhillyD', platform:'YouTube/X', cat:'news', followers:'8M+', why:'News commentary king. His audience loves OffScript-style takes.', link:'https://x.com/PhillyD', icon:'📰', hot:true },
+  { name:'The Young Turks', handle:'@TheYoungTurks', platform:'YouTube/X', cat:'news', followers:'5M+', why:'Political commentary. Quote tweet with your angle for exposure.', link:'https://x.com/theyoungturks', icon:'📰', hot:false },
+
+  // 🇬🇭 Ghana Creators
+  { name:'GhanaWeb', handle:'@GhanaWeb', platform:'X', cat:'ghana', followers:'500K+', why:'#1 Ghana news. Quote tweet their stories with OffScript commentary.', link:'https://x.com/GhanaWeb', icon:'🇬🇭', hot:true },
+  { name:'Pulse Ghana', handle:'@PulseGhana', platform:'X/Instagram', cat:'ghana', followers:'400K+', why:'Ghana entertainment news. Perfect crossover audience.', link:'https://x.com/PulseGhana', icon:'🇬🇭', hot:true },
+  { name:'Ameyaw Debrah', handle:'@ameyaw112', platform:'X/Instagram', cat:'ghana', followers:'300K+', why:'Ghana celeb blogger. React to his entertainment posts.', link:'https://x.com/ameyaw112', icon:'🇬🇭', hot:false },
+  { name:'Delay', handle:'@DelayGhana', platform:'X/Instagram', cat:'ghana', followers:'1M+', why:'Ghana TV personality. Huge local influence. Engage with her content.', link:'https://x.com/DelayGhana', icon:'🇬🇭', hot:true },
+
+  // 🎬 Entertainment
+  { name:'Complex', handle:'@Complex', platform:'X/Instagram', cat:'entertainment', followers:'15M+', why:'Hip hop + culture news. Duet/repost their viral clips.', link:'https://x.com/Complex', icon:'🎬', hot:true },
+  { name:'TMZ', handle:'@TMZ', platform:'X/Instagram', cat:'entertainment', followers:'18M+', why:'Celebrity breaking news. First to react = algorithm boost.', link:'https://x.com/TMZ', icon:'🎬', hot:true },
+  { name:'Akademiks', handle:'@Akademiks', platform:'X/Instagram', cat:'entertainment', followers:'8M+', why:'Hip hop commentary. Gen Z heavy audience. Perfect for OffScript.', link:'https://x.com/Akademiks', icon:'🎬', hot:true },
+
+  // ⚽ Sports
+  { name:'ESPN', handle:'@ESPN', platform:'X', cat:'sports', followers:'40M+', why:'React to big sports moments immediately after they happen.', link:'https://x.com/ESPN', icon:'⚽', hot:true },
+  { name:'Ghana FA', handle:'@ghanafaofficial', platform:'X', cat:'sports', followers:'300K+', why:'Official Ghana football. Huge engagement around match days.', link:'https://x.com/ghanafaofficial', icon:'⚽', hot:false },
+];
+
+let creatorFilter = 'all';
+
+function loadCreatorFeed() {
+  filterCreators(creatorFilter, null);
+}
+
+function filterCreators(cat, btn) {
+  creatorFilter = cat;
+  if (btn) {
+    btn.closest('div').querySelectorAll('button').forEach(b => b.className = b.className.replace('btn-primary','btn-ghost'));
+    btn.className = btn.className.replace('btn-ghost','btn-primary');
+  }
+  const el = document.getElementById('creator-feed');
+  if (!el) return;
+  const filtered = cat === 'all' ? CREATORS : CREATORS.filter(c => c.cat === cat);
+  el.innerHTML = filtered.map(c => `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;${c.hot ? 'border-left:3px solid var(--orange);' : ''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="font-size:22px;">${c.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            ${c.name}
+            ${c.hot ? '<span style="font-size:9px;background:var(--orange);color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;">HOT</span>' : ''}
+          </div>
+          <div style="font-size:11px;color:var(--text3);">${c.handle} · ${c.platform} · ${c.followers}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.4;margin-bottom:10px;">💡 ${c.why}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <a href="${c.link}" target="_blank" class="btn btn-primary btn-xs">Visit →</a>
+        <button class="btn btn-secondary btn-xs" onclick="genCreatorPost('${c.name}','${c.handle}','${c.cat}')">✨ Write repost angle</button>
+      </div>
+    </div>`).join('');
+}
+
+async function genCreatorPost(name, handle, cat) {
+  const el = document.getElementById('ai-result');
+  document.getElementById('ai-topic').value = `Repost/react to ${name} (${handle}) latest content`;
+  nav('content');
+  showLoading(el);
+  try {
+    const text = await callClaude(`Write a short post for OffScript Media reacting to or engaging with ${name} (${handle})'s latest content. Category: ${cat}. The goal is to tap into their audience. Write it as a quote tweet / duet caption / comment that adds value and drives people to follow OffScript Media. Platform: X/Twitter. Keep it punchy, Gen Z tone, under 200 chars.`);
+    showResult(el, text);
+  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
+}
+
+// ════════════════════════════════════════════
+// IMAGE FINDER
+// ════════════════════════════════════════════
+async function generatePostWithImage() {
+  const topic = document.getElementById('ai-topic').value.trim();
+  if (!topic) { toast('Enter a topic first', 'error'); return; }
+
+  // Generate the post first
+  await generatePost();
+
+  // Find matching image via Unsplash (free, no key needed)
+  const imgEl = document.getElementById('ai-image-result');
+  if (!imgEl) return;
+  imgEl.style.display = 'block';
+  imgEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:8px 0;">🖼️ Finding matching images...</div>';
+
+  // Build search query from topic
+  const query = topic.replace(/[^a-zA-Z0-9 ]/g,'').split(' ').slice(0,3).join('+');
+  const unsplashUrl = `https://source.unsplash.com/800x450/?${encodeURIComponent(query)}`;
+  const pixabaySearch = `https://pixabay.com/api/?key=47467286-e5f9f8f3a8f4e9b2c1d7a8e3f&q=${encodeURIComponent(query)}&image_type=photo&per_page=3&safesearch=true`;
+
+  try {
+    const res = await fetch(pixabaySearch);
+    const data = await res.json();
+    if (data.hits && data.hits.length) {
+      imgEl.innerHTML = `
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">🖼️ Suggested images for "${topic.slice(0,40)}"</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+          ${data.hits.slice(0,3).map(img => `
+            <div style="position:relative;cursor:pointer;" onclick="selectImage('${img.webformatURL}')">
+              <img src="${img.webformatURL}" style="width:100%;height:100px;object-fit:cover;border-radius:var(--r-sm);border:2px solid transparent;transition:border 0.15s;" onmouseover="this.style.border='2px solid var(--orange)'" onmouseout="this.style.border='2px solid transparent'">
+              <div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;">Click to select</div>
+            </div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);">Free to use (Pixabay license). Click an image to copy its URL for your post.</div>`;
+    } else {
+      // Fallback to Unsplash direct URL
+      imgEl.innerHTML = `
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">🖼️ Suggested image</div>
+        <img src="${unsplashUrl}" style="width:100%;height:180px;object-fit:cover;border-radius:var(--r-sm);cursor:pointer;" onclick="selectImage('${unsplashUrl}')" onerror="this.parentElement.innerHTML='<div style=color:var(--text3);font-size:12px;>Could not load image. Try searching manually on Unsplash.com</div>'">
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">From Unsplash — free to use. Click to copy URL.</div>`;
+    }
+  } catch(e) {
+    imgEl.innerHTML = `
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">🖼️ Find a free image:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="https://unsplash.com/s/photos/${encodeURIComponent(query)}" target="_blank" class="btn btn-secondary btn-sm">Unsplash →</a>
+        <a href="https://www.pexels.com/search/${encodeURIComponent(query)}/" target="_blank" class="btn btn-secondary btn-sm">Pexels →</a>
+        <a href="https://pixabay.com/images/search/${encodeURIComponent(query)}/" target="_blank" class="btn btn-secondary btn-sm">Pixabay →</a>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">All free, no attribution required on Unsplash/Pexels.</div>`;
+  }
+}
+
+function selectImage(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    toast('Image URL copied! Paste it when uploading to your platform 📸', 'success');
+  });
+}
+
+// ════════════════════════════════════════════
+// SMART POST SUGGESTIONS ENGINE
+// ════════════════════════════════════════════
+let suggestionsCache = null;
+let suggestionsTimer = null;
+
+const MT_SCHEDULE = {
+  tiktok:    [{h:7,m:0},{h:12,m:0},{h:19,m:0}],
+  instagram: [{h:11,m:0},{h:14,m:0},{h:20,m:0}],
+  twitter:   [{h:9,m:0},{h:13,m:0},{h:17,m:0}],
+  linkedin:  [{h:8,m:0},{h:12,m:0},{h:17,m:0}],
+  youtube:   [{h:14,m:0},{h:18,m:0}],
+};
+
+const PLAT_ICONS = {tiktok:'TT',instagram:'📸',twitter:'𝕏',linkedin:'in',youtube:'▶'};
+const PLAT_COLORS = {tiktok:'#010101',instagram:'#e1306c',twitter:'#111',linkedin:'#0077b5',youtube:'#ff0000'};
+const PLAT_HANDLES = {tiktok:'@offscript_media',instagram:'@offscript__media',twitter:'@offscrip_tmedia',linkedin:'OffScript Media',youtube:'@OffScriptMedia'};
+
+function getNextPostTime(platform) {
+  const now = new Date();
+  // Convert to MT (UTC-6 standard, UTC-7 daylight — use UTC-6 as approx)
+  const mt = new Date(now.getTime() - (6 * 60 * 60 * 1000));
+  const slots = MT_SCHEDULE[platform] || MT_SCHEDULE.twitter;
+  for (const slot of slots) {
+    const slotDate = new Date(mt);
+    slotDate.setHours(slot.h, slot.m, 0, 0);
+    if (slotDate > mt) {
+      return slot.h > 12 ? `${slot.h-12}:${String(slot.m).padStart(2,'0')} PM MT` : `${slot.h}:${String(slot.m).padStart(2,'0')} AM MT`;
+    }
+  }
+  // Next day first slot
+  const s = slots[0];
+  return s.h > 12 ? `Tomorrow ${s.h-12}:${String(s.m).padStart(2,'0')} PM MT` : `Tomorrow ${s.h}:${String(s.m).padStart(2,'0')} AM MT`;
+}
+
+function scoreStoryForPlatform(title, platform) {
+  const t = title.toLowerCase();
+  const scores = {
+    tiktok:    ['trending','viral','shocking','you won','watch','video','just happened','breaking','wild','crazy'],
+    instagram: ['photos','look','style','beautiful','travel','food','life','inspiration','culture','ghana'],
+    twitter:   ['breaking','just in','thread','hot take','analysis','opinion','news','update','report'],
+    linkedin:  ['career','jobs','business','economy','tech','ai','startup','professional','industry','market'],
+    youtube:   ['explained','how to','full story','watch','documentary','breakdown','deep dive','tutorial'],
+  };
+  const keywords = scores[platform] || scores.twitter;
+  return keywords.filter(k => t.includes(k)).length;
+}
+
+async function loadSmartSuggestions(forceRefresh = false) {
+  const el = document.getElementById('smart-suggestions');
+  const timeEl = document.getElementById('suggestions-time');
+  if (!el) return;
+
+  // Use cache if fresh (< 30 min)
+  if (!forceRefresh && suggestionsCache && (Date.now() - suggestionsCache.ts) < 1800000) {
+    renderSmartSuggestions(suggestionsCache.data);
+    return;
+  }
+
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;"><div class="spinner"></div> Analyzing trending stories...</div>';
+
+  // Get fresh news
+  const newsItems = allNewsCache.length ? allNewsCache : await fetchLiveNews();
+  if (!newsItems || !newsItems.length) {
+    el.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:13px;">Could not load news. Check connection and refresh.</div>';
+    return;
+  }
+
+  // Pick top 3 stories (mix of categories, most recent)
+  const topStories = newsItems.slice(0, 8);
+
+  // Ask Claude to analyze and generate smart suggestions
+  const storiesList = topStories.map((s,i) => `${i+1}. [${s.cat?.toUpperCase()}] ${s.title} (${s.source})`).join('
+');
+
+  try {
+    const key = localStorage.getItem('offscript_api_key');
+    if (!key) {
+      renderFallbackSuggestions(topStories);
+      return;
+    }
+
+    const prompt = `You are the content strategist for OffScript Media (Paul Agyare). 
+Accounts: TikTok @offscript_media, Instagram @offscript__media, X @offscrip_tmedia, LinkedIn OffScript Media, YouTube @OffScriptMedia.
+Audience: US + Ghana + global, ages 18-35, interested in news, tech, entertainment, sports, culture.
+
+Here are the top trending stories RIGHT NOW:
+${storiesList}
+
+Pick the 3 best stories to post about TODAY. For each one:
+1. Which platform fits best and why (pick ONE primary platform)
+2. Write the actual post copy ready to copy-paste (platform-appropriate length/format)
+3. Best time to post in Mountain Time
+
+Respond ONLY as a JSON array, no explanation:
+[
+  {
+    "story": "headline",
+    "platform": "tiktok|instagram|twitter|linkedin|youtube",
+    "reason": "one sentence why this platform",
+    "post": "the actual post copy",
+    "time": "e.g. 7:00 PM MT"
+  }
+]`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:1500,
+        messages:[{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content?.[0]?.text || '';
+    const clean = text.trim().replace(/```json|```/g,'').trim();
+    const suggestions = JSON.parse(clean);
+    suggestionsCache = {data: suggestions, ts: Date.now()};
+    if (timeEl) timeEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    renderSmartSuggestions(suggestions);
+
+    // Auto-refresh in 30 min
+    if (suggestionsTimer) clearTimeout(suggestionsTimer);
+    suggestionsTimer = setTimeout(() => loadSmartSuggestions(true), 1800000);
+
+  } catch(e) {
+    renderFallbackSuggestions(topStories);
+  }
+}
+
+function renderSmartSuggestions(suggestions) {
+  const el = document.getElementById('smart-suggestions');
+  if (!el || !suggestions?.length) return;
+  el.innerHTML = suggestions.map(s => {
+    const color = PLAT_COLORS[s.platform] || '#ff6b2c';
+    const icon = PLAT_ICONS[s.platform] || '📱';
+    const handle = PLAT_HANDLES[s.platform] || '';
+    const nextTime = s.time || getNextPostTime(s.platform);
+    const safe = (s.post||'').replace(/`/g,"'");
+    return `
+    <div style="padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;border-left:3px solid ${color};">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:26px;height:26px;background:${color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${icon}</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;">${s.platform?.toUpperCase()} — ${handle}</div>
+          <div style="font-size:10px;color:var(--text3);">${s.reason}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:11px;font-weight:700;color:var(--orange);">⏰ ${nextTime}</div>
+          <div style="font-size:10px;color:var(--text3);">post now</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;padding:10px;background:var(--bg4);border-radius:var(--r-sm);">${s.post}</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-primary btn-xs" onclick="navigator.clipboard.writeText(\`${safe}\`).then(()=>showToast('Copied! Go post it now 🚀','success'))">📋 Copy & Post</button>
+        <button class="btn btn-secondary btn-xs" onclick="document.getElementById('ai-topic').value='${s.story?.replace(/'/g,'')}';nav('content');">✨ Generate variations</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFallbackSuggestions(stories) {
+  const el = document.getElementById('smart-suggestions');
+  const timeEl = document.getElementById('suggestions-time');
+  if (!el) return;
+  if (timeEl) timeEl.textContent = 'Add API key for AI suggestions';
+
+  const platforms = ['tiktok','twitter','instagram'];
+  el.innerHTML = stories.slice(0,3).map((s, i) => {
+    const plat = platforms[i] || 'twitter';
+    const color = PLAT_COLORS[plat];
+    const icon = PLAT_ICONS[plat];
+    const handle = PLAT_HANDLES[plat];
+    const nextTime = getNextPostTime(plat);
+    return `
+    <div style="padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;border-left:3px solid ${color};">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:26px;height:26px;background:${color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;">${icon}</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;">${plat.toUpperCase()} — ${handle}</div>
+          <div style="font-size:10px;color:var(--text3);">${s.source} · ${s.cat?.toUpperCase()}</div>
+        </div>
+        <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--orange);">⏰ ${nextTime}</div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;">${s.title}</div>
+      <button class="btn btn-primary btn-xs" onclick="document.getElementById('ai-topic').value='${s.title.replace(/'/g,'')}';nav('content');">✨ Generate post from this</button>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg, type) { toast(msg, type); }
+
 // ════════════════════════════════════════════
 // GROWTH ENGINE
 // ════════════════════════════════════════════
@@ -2449,6 +2820,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load live global news on startup
   loadDashboardNews();
+  setTimeout(loadSmartSuggestions, 3000);
 });
 </script>
 </body>
