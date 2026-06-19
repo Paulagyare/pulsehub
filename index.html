@@ -415,9 +415,27 @@ input,textarea,select{font-family:inherit;}
       <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2v12M2 8h12"/></svg>
       New Post
     </button>
-    <div class="icon-btn" title="Notifications">
+    <div class="icon-btn" id="notif-btn" title="Posting reminders" onclick="toggleNotifPanel()" style="position:relative;">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5zM6.5 13a1.5 1.5 0 003 0"/></svg>
-      <div class="notif-dot"></div>
+      <div class="notif-dot" id="notif-dot" style="display:none;"></div>
+      <span id="notif-count" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--orange);color:#fff;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;"></span>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div id="notif-panel" style="display:none;position:fixed;top:58px;right:16px;width:320px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;overflow:hidden;">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:14px;font-weight:700;">🔔 Posting Reminders</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-ghost btn-xs" onclick="toggleBrowserNotifs()" id="notif-toggle-btn">Enable alerts</button>
+        <button onclick="toggleNotifPanel()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:16px;">✕</button>
+      </div>
+    </div>
+    <div id="notif-list" style="max-height:400px;overflow-y:auto;padding:8px;">
+      <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Loading your schedule...</div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);">
+      Reminders based on Mountain Time (MT)
     </div>
   </div>
 </header>
@@ -2812,6 +2830,216 @@ function showYTLiveCard(stats) {
   bar.after(card);
 }
 
+
+
+// ════════════════════════════════════════════
+// POSTING REMINDERS & NOTIFICATIONS
+// ════════════════════════════════════════════
+
+// All posting times in Mountain Time (MT)
+const POST_SCHEDULE = [
+  { platform: 'TikTok',     handle: '@offscript_media',   icon: 'TT', color: '#010101', times: [{h:7,m:0},{h:12,m:0},{h:19,m:0}],    days: [0,1,2,3,4,5,6] },
+  { platform: 'Instagram',  handle: '@offscript__media',  icon: '📸', color: '#e1306c', times: [{h:11,m:0},{h:14,m:0}],              days: [1,3,5] },
+  { platform: 'X/Twitter',  handle: '@offscrip_tmedia',   icon: '𝕏',  color: '#111111', times: [{h:9,m:0},{h:17,m:0}],              days: [1,2,3,4,5] },
+  { platform: 'LinkedIn',   handle: 'OffScript Media',    icon: 'in', color: '#0077b5', times: [{h:8,m:0},{h:12,m:0}],              days: [2,3,4] },
+  { platform: 'YouTube',    handle: '@OffScriptMediaGH',  icon: '▶',  color: '#ff0000', times: [{h:14,m:0}],                        days: [5] },
+];
+
+let notifPanelOpen = false;
+let notifCheckInterval = null;
+let lastAlertedSlot = '';
+
+function getMTTime() {
+  // MT is UTC-6 (MDT) or UTC-7 (MST) — use UTC-6 approximation
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  return new Date(utc - (6 * 3600000));
+}
+
+function getUpcomingSlots() {
+  const mt = getMTTime();
+  const dayOfWeek = mt.getDay(); // 0=Sun, 1=Mon...
+  const currentH = mt.getHours();
+  const currentM = mt.getMinutes();
+  const currentMins = currentH * 60 + currentM;
+
+  const slots = [];
+  POST_SCHEDULE.forEach(sched => {
+    sched.times.forEach(t => {
+      const slotMins = t.h * 60 + t.m;
+      const diffMins = slotMins - currentMins;
+      const isToday = sched.days.includes(dayOfWeek);
+      const isTomorrow = sched.days.includes((dayOfWeek + 1) % 7);
+
+      if (isToday && diffMins > -30 && diffMins <= 480) { // within next 8 hours
+        const timeStr = t.h > 12 ? (t.h-12)+':'+(String(t.m).padStart(2,'0'))+' PM MT' : t.h+':'+(String(t.m).padStart(2,'0'))+' AM MT';
+        slots.push({
+          platform: sched.platform,
+          handle: sched.handle,
+          icon: sched.icon,
+          color: sched.color,
+          time: timeStr,
+          diffMins,
+          isNow: diffMins >= -15 && diffMins <= 15,
+          isSoon: diffMins > 15 && diffMins <= 30,
+          isUpcoming: diffMins > 30,
+          slotKey: sched.platform + '_' + t.h + '_' + t.m
+        });
+      } else if (!isToday && isTomorrow && diffMins < 0) {
+        const timeStr = t.h > 12 ? (t.h-12)+':'+(String(t.m).padStart(2,'0'))+' PM MT' : t.h+':'+(String(t.m).padStart(2,'0'))+' AM MT';
+        slots.push({
+          platform: sched.platform,
+          handle: sched.handle,
+          icon: sched.icon,
+          color: sched.color,
+          time: 'Tomorrow ' + timeStr,
+          diffMins: diffMins + 1440,
+          isNow: false,
+          isSoon: false,
+          isUpcoming: true,
+          slotKey: sched.platform + '_tomorrow_' + t.h + '_' + t.m
+        });
+      }
+    });
+  });
+  return slots.sort((a,b) => a.diffMins - b.diffMins);
+}
+
+function renderNotifPanel() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  const slots = getUpcomingSlots();
+  const dot = document.getElementById('notif-dot');
+  const countEl = document.getElementById('notif-count');
+  const nowCount = slots.filter(s => s.isNow || s.isSoon).length;
+
+  if (nowCount > 0) {
+    if (dot) dot.style.display = 'block';
+    if (countEl) { countEl.style.display = 'flex'; countEl.textContent = nowCount; }
+  } else {
+    if (dot) dot.style.display = 'none';
+    if (countEl) countEl.style.display = 'none';
+  }
+
+  if (!slots.length) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">No posts scheduled in the next 8 hours. Good work today!</div>';
+    return;
+  }
+
+  el.innerHTML = slots.map(s => {
+    let statusColor = 'var(--text3)';
+    let statusText = s.time;
+    let urgency = '';
+    if (s.isNow) { statusColor = 'var(--orange)'; statusText = '🔴 POST NOW — ' + s.time; urgency = 'border-left:3px solid var(--orange);'; }
+    else if (s.isSoon) { statusColor = 'var(--yellow)'; statusText = '⚡ In ' + s.diffMins + ' min — ' + s.time; urgency = 'border-left:3px solid var(--yellow);'; }
+    else { statusText = '⏰ ' + s.time; }
+
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:6px;background:var(--bg3);border-radius:var(--r-sm);'+urgency+'">'
+      + '<div style="width:32px;height:32px;background:'+s.color+';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">'+s.icon+'</div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:600;">'+s.platform+'</div>'
+      + '<div style="font-size:11px;color:var(--text3);">'+s.handle+'</div>'
+      + '</div>'
+      + '<div style="text-align:right;">'
+      + '<div style="font-size:11px;font-weight:700;color:'+statusColor+';">'+statusText+'</div>'
+      + '<button class="btn btn-primary btn-xs" style="margin-top:4px;" onclick="openContentFromNotif()">Create post</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function openContentFromNotif() { toggleNotifPanel(); nav('content'); }
+function toggleNotifPanel() {
+  const panel = document.getElementById('notif-panel');
+  if (!panel) return;
+  notifPanelOpen = !notifPanelOpen;
+  panel.style.display = notifPanelOpen ? 'block' : 'none';
+  if (notifPanelOpen) renderNotifPanel();
+}
+
+// Close panel when clicking outside
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('notif-panel');
+  const btn = document.getElementById('notif-btn');
+  if (panel && notifPanelOpen && !panel.contains(e.target) && !btn?.contains(e.target)) {
+    notifPanelOpen = false;
+    panel.style.display = 'none';
+  }
+});
+
+async function toggleBrowserNotifs() {
+  const btn = document.getElementById('notif-toggle-btn');
+  if (!('Notification' in window)) {
+    toast('Your browser does not support notifications', 'error');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    toast('Notifications already enabled!', 'success');
+    if (btn) btn.textContent = 'Enabled ✓';
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    if (btn) btn.textContent = 'Enabled ✓';
+    toast('Posting reminders enabled! You will get alerts when it is time to post.', 'success');
+    new Notification('PulseHub — OffScript Media', {
+      body: 'Posting reminders are now active. We will alert you when it is time to post!',
+      icon: 'https://paulagyare.github.io/pulsehub/favicon.ico'
+    });
+  } else {
+    toast('Please allow notifications in your browser settings', 'error');
+  }
+}
+
+function sendPostingAlert(slot) {
+  // Browser notification
+  if (Notification.permission === 'granted') {
+    new Notification('Time to post on ' + slot.platform + '!', {
+      body: 'Best time to post is NOW (' + slot.time + '). Open PulseHub to create your post.',
+      icon: 'https://paulagyare.github.io/pulsehub/favicon.ico',
+      tag: slot.slotKey,
+      requireInteraction: true
+    });
+  }
+  // In-app toast alert
+  toast('🔴 Time to post on ' + slot.platform + ' (' + slot.handle + ')! Best window is NOW.', 'info');
+  // Update badge
+  renderNotifPanel();
+}
+
+function startPostingReminders() {
+  // Check every minute
+  if (notifCheckInterval) clearInterval(notifCheckInterval);
+  notifCheckInterval = setInterval(() => {
+    const slots = getUpcomingSlots();
+    slots.forEach(s => {
+      if (s.isNow && s.slotKey !== lastAlertedSlot) {
+        lastAlertedSlot = s.slotKey;
+        sendPostingAlert(s);
+      }
+    });
+    // Update badge count silently
+    const nowCount = slots.filter(s => s.isNow || s.isSoon).length;
+    const dot = document.getElementById('notif-dot');
+    const countEl = document.getElementById('notif-count');
+    if (nowCount > 0) {
+      if (dot) dot.style.display = 'block';
+      if (countEl) { countEl.style.display = 'flex'; countEl.textContent = nowCount; }
+    } else {
+      if (dot) dot.style.display = 'none';
+      if (countEl) countEl.style.display = 'none';
+    }
+  }, 60000); // check every 60 seconds
+
+  // Initial check
+  const slots = getUpcomingSlots();
+  const nowCount = slots.filter(s => s.isNow || s.isSoon).length;
+  const dot = document.getElementById('notif-dot');
+  const countEl = document.getElementById('notif-count');
+  if (nowCount > 0) {
+    if (dot) dot.style.display = 'block';
+    if (countEl) { countEl.style.display = 'flex'; countEl.textContent = nowCount; }
+  }
+}
 
 // ════════════════════════════════════════════
 // YOUTUBE API INTEGRATION
