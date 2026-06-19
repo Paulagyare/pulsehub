@@ -438,26 +438,65 @@ input,textarea,select{font-family:inherit;}
     <button class="btn btn-primary btn-sm" onclick="nav('settings')" style="flex-shrink:0;">Add API Key →</button>
   </div>
 
+  <!-- STATS UPDATE BAR -->
+  <div id="stats-update-bar" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    <div style="font-size:13px;color:var(--text2);">📊 <strong style="color:var(--text);">Update your stats</strong> — enter your real numbers from each platform</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a href="https://www.tiktok.com/@offscript_media" target="_blank" class="btn btn-ghost btn-xs">TikTok →</a>
+      <a href="https://www.instagram.com/offscript__media" target="_blank" class="btn btn-ghost btn-xs">Instagram →</a>
+      <a href="https://www.youtube.com/@OffScriptMediaGHGH" target="_blank" class="btn btn-ghost btn-xs">YouTube →</a>
+      <a href="https://x.com/offscrip_tmedia" target="_blank" class="btn btn-ghost btn-xs">X →</a>
+      <button class="btn btn-primary btn-xs" onclick="openStatsModal()">✏️ Update stats</button>
+    </div>
+  </div>
+
   <div class="g4 mb16">
-    <div class="metric-card">
-      <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5 6a5 5 0 0110 0H3z"/></svg> Followers</div>
-      <div class="mc-val" id="m-followers">—</div>
-      <div class="mc-delta neu" id="m-followers-d">Accounts not created yet</div>
+    <div class="metric-card" style="cursor:pointer;" onclick="openStatsModal()">
+      <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zm-5 6a5 5 0 0110 0H3z"/></svg> Total Followers</div>
+      <div class="mc-val" id="m-followers">0</div>
+      <div class="mc-delta" id="m-followers-d" style="color:var(--text3);">Click to update →</div>
     </div>
-    <div class="metric-card">
-      <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg> Views</div>
-      <div class="mc-val" id="m-views">—</div>
-      <div class="mc-delta neu" id="m-views-d">Accounts not created yet</div>
+    <div class="metric-card" style="cursor:pointer;" onclick="openStatsModal()">
+      <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg> Total Views</div>
+      <div class="mc-val" id="m-views">0</div>
+      <div class="mc-delta" id="m-views-d" style="color:var(--text3);">Click to update →</div>
     </div>
-    <div class="metric-card">
+    <div class="metric-card" style="cursor:pointer;" onclick="openStatsModal()">
       <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l1.5 4.5H14l-3.7 2.7 1.4 4.3L8 11l-3.7 2.5 1.4-4.3L2 6.5h4.5z"/></svg> Engagements</div>
-      <div class="mc-val" id="m-eng">—</div>
-      <div class="mc-delta neu" id="m-eng-d">Accounts not created yet</div>
+      <div class="mc-val" id="m-eng">0</div>
+      <div class="mc-delta" id="m-eng-d" style="color:var(--text3);">Click to update →</div>
     </div>
-    <div class="metric-card">
+    <div class="metric-card" style="cursor:pointer;" onclick="openStatsModal()">
       <div class="mc-label"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2a1 1 0 00-1 1v8a1 1 0 001 1h2v2.5l3-2.5h7a1 1 0 001-1V3a1 1 0 00-1-1z"/></svg> Comments</div>
-      <div class="mc-val" id="m-comments">—</div>
-      <div class="mc-delta neu" id="m-comments-d">Accounts not created yet</div>
+      <div class="mc-val" id="m-comments">0</div>
+      <div class="mc-delta" id="m-comments-d" style="color:var(--text3);">Click to update →</div>
+    </div>
+  </div>
+
+  <!-- STATS MODAL -->
+  <div id="stats-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:28px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:700;">📊 Update Your Stats</div>
+        <button onclick="closeStatsModal()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;">✕</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Open each platform, check your numbers, enter them below. These save to your browser.</div>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">TIKTOK FOLLOWERS</div><input type="number" id="s-tt-f" class="input" placeholder="0"><div style="font-size:10px;color:var(--orange);margin-top:3px;"><a href="https://www.tiktok.com/@offscript_media" target="_blank" style="color:var(--orange);">Open @offscript_media →</a></div></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">TIKTOK TOTAL VIEWS</div><input type="number" id="s-tt-v" class="input" placeholder="0"></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">INSTAGRAM FOLLOWERS</div><input type="number" id="s-ig-f" class="input" placeholder="0"><div style="font-size:10px;margin-top:3px;"><a href="https://www.instagram.com/offscript__media" target="_blank" style="color:var(--orange);">Open @offscript__media →</a></div></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">INSTAGRAM REACH (30d)</div><input type="number" id="s-ig-v" class="input" placeholder="0"></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">YOUTUBE SUBSCRIBERS</div><input type="number" id="s-yt-f" class="input" placeholder="0"><div style="font-size:10px;margin-top:3px;"><a href="https://www.youtube.com/@OffScriptMediaGHGH" target="_blank" style="color:var(--orange);">Open @OffScriptMediaGH →</a></div></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">YOUTUBE VIEWS (30d)</div><input type="number" id="s-yt-v" class="input" placeholder="0"></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">X / TWITTER FOLLOWERS</div><input type="number" id="s-tw-f" class="input" placeholder="0"><div style="font-size:10px;margin-top:3px;"><a href="https://x.com/offscrip_tmedia" target="_blank" style="color:var(--orange);">Open @offscrip_tmedia →</a></div></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">X IMPRESSIONS (30d)</div><input type="number" id="s-tw-v" class="input" placeholder="0"></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">LINKEDIN FOLLOWERS</div><input type="number" id="s-li-f" class="input" placeholder="0"></div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">TOTAL ENGAGEMENTS</div><input type="number" id="s-eng" class="input" placeholder="likes + comments + shares"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;">TOTAL COMMENTS (across all platforms)</div>
+      <input type="number" id="s-comments" class="input" placeholder="0" style="margin-bottom:16px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="saveStats()">Save stats to dashboard</button>
     </div>
   </div>
 
@@ -590,6 +629,7 @@ input,textarea,select{font-family:inherit;}
     <button class="btn btn-ghost btn-sm" onclick="filterNews('tech',this)">💻 Tech</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('entertainment',this)">🎬 Entertainment</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('sports',this)">⚽ Sports</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('gaming',this)">🎮 Gaming</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('business',this)">📈 Business</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('cyber',this)">🛡️ Cyber</button>
     <button class="btn btn-primary btn-sm" onclick="loadNewsPage()" style="margin-left:auto;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);">↻ Refresh</button>
@@ -970,12 +1010,12 @@ input,textarea,select{font-family:inherit;}
     <div class="plat-card">
       <div class="plat-card-hd">
         <div class="plat-card-icon" style="background:#ff0000;color:#fff;font-size:18px;">▶</div>
-        <div><div class="plat-card-name">YouTube</div><div class="plat-card-handle">@OffScriptMedia</div></div>
+        <div><div class="plat-card-name">YouTube</div><div class="plat-card-handle">@OffScriptMediaGH</div></div>
         <span class="plat-card-status status-new">Not Created</span>
       </div>
       <div class="plat-stat-row"><div class="plat-stat"><div class="val">—</div><div class="lbl">Subscribers</div></div><div class="plat-stat"><div class="val">—</div><div class="lbl">Videos</div></div><div class="plat-stat"><div class="val">—</div><div class="lbl">Views</div></div></div>
       <div class="plat-bio">OffScript Media — Cybersecurity & tech education without the fluff. Real breakdowns, real career advice, real talk. Subscribe for weekly drops.</div>
-      <div style="display:flex;gap:8px;"><a href="https://youtube.com" target="_blank" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;">Create Channel →</a><button class="btn btn-ghost btn-sm" onclick="copyToClip(this,true,'@OffScriptMedia')">Copy Handle</button></div>
+      <div style="display:flex;gap:8px;"><a href="https://youtube.com" target="_blank" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;">Create Channel →</a><button class="btn btn-ghost btn-sm" onclick="copyToClip(this,true,'@OffScriptMediaGH')">Copy Handle</button></div>
     </div>
   </div>
 
@@ -986,7 +1026,7 @@ input,textarea,select{font-family:inherit;}
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Created Instagram @offscript.media</label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Created TikTok @offscriptmedia</label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Created LinkedIn Company Page</label>
-      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Created YouTube @OffScriptMedia</label>
+      <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Created YouTube @OffScriptMediaGH</label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Added profile photo to all platforms</label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Added banner/header art</label>
       <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);cursor:pointer;font-size:13px;"><input type="checkbox" onchange="updateChecklist()" style="accent-color:var(--orange);width:16px;height:16px;"> Added bios to all platforms</label>
@@ -1113,7 +1153,7 @@ input,textarea,select{font-family:inherit;}
         <div style="font-size:20px;margin-bottom:6px;">▶</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">YouTube</div>
         <input type="number" id="f-youtube" class="input" style="text-align:center;font-size:16px;font-weight:700;padding:8px;" placeholder="0" oninput="updateAllProgress()">
-        <div style="font-size:10px;color:var(--text3);margin-top:4px;">@OffScriptMedia</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;">@OffScriptMediaGH</div>
       </div>
       <div style="background:var(--bg3);border-radius:var(--r);padding:14px;text-align:center;">
         <div style="font-size:20px;margin-bottom:6px;">𝕏</div>
@@ -1191,7 +1231,7 @@ input,textarea,select{font-family:inherit;}
     <div class="card" style="border-top:3px solid #ff0000;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
         <div style="width:40px;height:40px;background:#ff0000;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">▶</div>
-        <div><div style="font-weight:700;font-size:15px;">YouTube</div><div style="font-size:11px;color:var(--text3);">@OffScriptMedia</div></div>
+        <div><div style="font-weight:700;font-size:15px;">YouTube</div><div style="font-size:11px;color:var(--text3);">@OffScriptMediaGH</div></div>
         <a href="https://youtube.com" target="_blank" class="btn btn-primary btn-sm" style="margin-left:auto;">Create Channel →</a>
       </div>
       <div style="margin-bottom:14px;">
@@ -1320,7 +1360,7 @@ input,textarea,select{font-family:inherit;}
       </div>
       <div style="background:var(--bg3);border-radius:var(--r);padding:14px;text-align:center;border:1px solid var(--border);">
         <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:4px;">YOUTUBE</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">@OffScriptMedia</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">@OffScriptMediaGH</div>
         <input type="number" id="g-youtube" class="input" style="text-align:center;font-size:20px;font-weight:800;padding:8px;" placeholder="0" oninput="updateGrowthDash()">
         <div style="font-size:10px;color:var(--green);margin-top:6px;" id="g-yt-delta">—</div>
       </div>
@@ -1393,7 +1433,7 @@ input,textarea,select{font-family:inherit;}
           <div style="font-size:11px;color:var(--orange);margin-top:6px;">⏰ Best times: 8AM, 12PM MT — Tue/Wed/Thu</div>
         </div>
         <div style="padding:12px;background:var(--bg3);border-radius:var(--r-sm);border-left:3px solid #ff0000;">
-          <div style="font-size:12px;font-weight:700;margin-bottom:4px;">YouTube @OffScriptMedia — 1x/week</div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px;">YouTube @OffScriptMediaGH — 1x/week</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.5;">Start with Shorts (repurpose TikToks). Long-form once you have content rhythm. <strong style="color:var(--text);">Best topics:</strong> "How I passed Security+", news breakdowns, tool tutorials.</div>
           <div style="font-size:11px;color:var(--orange);margin-top:6px;">⏰ Best times: Upload by 2PM MT Friday for weekend surge</div>
         </div>
@@ -1467,7 +1507,7 @@ input,textarea,select{font-family:inherit;}
           <div class="form-group"><label class="form-label">Instagram</label><input class="input" value="@offscript__media"></div>
           <div class="form-group"><label class="form-label">TikTok</label><input class="input" value="@offscript_media"></div>
           <div class="form-group"><label class="form-label">LinkedIn</label><input class="input" value="OffScript Media"></div>
-          <div class="form-group"><label class="form-label">YouTube</label><input class="input" value="@OffScriptMedia"></div>
+          <div class="form-group"><label class="form-label">YouTube</label><input class="input" value="@OffScriptMediaGH"></div>
           <button class="btn btn-primary">Save Handles</button>
         </div>
       </div>
@@ -1479,7 +1519,7 @@ input,textarea,select{font-family:inherit;}
           <div style="padding:12px;background:var(--orange-bg);border:1px solid var(--orange-bg2);border-radius:var(--r-sm);margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.5;">
             <strong style="color:var(--green);">✓ Paste your key HERE — never in chat.</strong><br><span style="font-size:12px;color:var(--text2);">Saved to this browser only. Goes directly to Anthropic API. Never share it in Claude chat or any conversation.</span>
           </div>
-          <div class="form-group"><label class="form-label">API Key</label>
+          <div class="form-group"><label class="form-label">Anthropic API Key (AI features)</label>
             <div style="display:flex;gap:8px;">
               <input type="password" id="api-key-input" class="input" placeholder="sk-ant-api03-..." style="flex:1;">
               <button class="btn btn-secondary" onclick="toggleKey()">Show</button>
@@ -1491,6 +1531,43 @@ input,textarea,select{font-family:inherit;}
           </div>
           <div id="api-key-status" style="margin-top:10px;font-size:12px;color:var(--text3);"></div>
           <div style="margin-top:12px;font-size:12px;color:var(--text3);">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--orange);">console.anthropic.com</a></div>
+          <div class="divider" style="margin:16px 0;"></div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">📺 YouTube API (live stats)</div>
+          <div class="form-group">
+            <label class="form-label">Google API Key (from console.cloud.google.com)</label>
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="yt-api-key-input" class="input" placeholder="AIzaSy..." style="flex:1;">
+              <button class="btn btn-secondary" onclick="toggleYTKey()">Show</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">YouTube Channel ID</label>
+            <input type="text" id="yt-channel-id-input" class="input" value="UCtMhb7XZR6gET1HCwmYWntg" readonly>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="saveYTKey()" style="flex:1;">Save YouTube Key</button>
+            <button class="btn btn-secondary" onclick="testYouTubeAPI()">Test connection</button>
+          </div>
+          <div id="yt-key-status" style="margin-top:8px;font-size:12px;color:var(--text3);"></div>
+
+          <div class="divider" style="margin:20px 0;height:1px;background:var(--border);"></div>
+
+          <div style="font-size:13px;font-weight:700;margin-bottom:12px;">📺 YouTube API (live subscriber count)</div>
+          <div class="form-group"><label class="form-label">YouTube Data API v3 Key</label>
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="yt-api-key-input" class="input" placeholder="AIzaSy..." style="flex:1;">
+              <button class="btn btn-secondary" onclick="toggleYTKey()">Show</button>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Channel ID</label>
+            <input type="text" id="yt-channel-id" class="input" value="UCtMhb7XZR6gET1HCwmYWntg" placeholder="UCxxxxxxxxxxxxxxxxxx">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="saveYTKey()" style="flex:1;">Save & Connect YouTube</button>
+            <button class="btn btn-ghost btn-sm" onclick="testYTApi()">Test</button>
+          </div>
+          <div id="yt-api-status" style="margin-top:10px;font-size:12px;color:var(--text3);"></div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">Get your key at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--orange);">console.cloud.google.com</a> → Credentials → Create API Key → restrict to YouTube Data API v3</div>
         </div>
       </div>
       <div class="card mb16">
@@ -1808,7 +1885,7 @@ function nav(page) {
   document.getElementById('topbar-sub').textContent = sub;
   currentPage = page;
   closeSidebar();
-  if (page === 'dashboard') { initChart(); loadDashboardNews(); setTimeout(loadSmartSuggestions, 2000); }
+  if (page === 'dashboard') { initChart(); loadDashboardNews(); setTimeout(loadSmartSuggestions, 2000); updateDashboardStats(); setTimeout(fetchYouTubeStats, 1500); }
   if (page === 'news') { loadNewsPage(); setTimeout(loadCreatorFeed, 500); }
   if (page === 'analytics') {
     const saved = JSON.parse(localStorage.getItem('offscript_growth_prev') || '{}');
@@ -1927,58 +2004,65 @@ function switchChartRange(days, btn) {
 // RSS proxy: inlined per-fetch for reliability
 
 const ALL_FEEDS = [
-  // 🇺🇸 US NEWS
-  { url:'https://rss.cnn.com/rss/edition.rss',           name:'CNN',              cat:'us',            icon:'🇺🇸' },
-  { url:'https://feeds.nbcnews.com/nbcnews/public/news', name:'NBC News',         cat:'us',            icon:'🇺🇸' },
-  { url:'https://abcnews.go.com/abcnews/topstories',     name:'ABC News',         cat:'us',            icon:'🇺🇸' },
-  { url:'https://feeds.a.dj.com/rss/RSSWorldNews.xml',  name:'Wall Street Journal', cat:'us',         icon:'🇺🇸' },
-  { url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', name:'NY Times', cat:'us',        icon:'🇺🇸' },
-  { url:'https://www.npr.org/rss/rss.php?id=1001',       name:'NPR News',         cat:'us',            icon:'🇺🇸' },
+  // 🇺🇸 US NEWS (entertainment-friendly, no politics)
+  { url:'https://abcnews.go.com/abcnews/entertainmentheadlines', name:'ABC Entertainment', cat:'entertainment', icon:'🎬' },
+  { url:'https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml',  name:'NY Times Arts',     cat:'entertainment', icon:'🎬' },
+  { url:'https://www.npr.org/rss/rss.php?id=1045',                name:'NPR Culture',       cat:'entertainment', icon:'🎬' },
 
   // 🇬🇭 GHANA NEWS
-  { url:'https://www.ghanaweb.com/GhanaHomePage/rss/headlines.xml', name:'GhanaWeb',  cat:'ghana',     icon:'🇬🇭' },
-  { url:'https://citifmonline.com/feed/',                name:'Citi FM',          cat:'ghana',         icon:'🇬🇭' },
-  { url:'https://www.pulse.com.gh/rss',                  name:'Pulse Ghana',      cat:'ghana',         icon:'🇬🇭' },
-  { url:'https://www.myjoyonline.com/feed/',             name:'JoyNews',          cat:'ghana',         icon:'🇬🇭' },
-  { url:'https://thebftonline.com/feed/',                name:'Business & Financial Times GH', cat:'ghana', icon:'🇬🇭' },
-  { url:'https://www.graphic.com.gh/feed',               name:'Graphic Online',   cat:'ghana',         icon:'🇬🇭' },
+  { url:'https://www.ghanaweb.com/GhanaHomePage/rss/headlines.xml', name:'GhanaWeb',        cat:'ghana',  icon:'🇬🇭' },
+  { url:'https://citifmonline.com/feed/',                           name:'Citi FM',          cat:'ghana',  icon:'🇬🇭' },
+  { url:'https://www.pulse.com.gh/rss',                             name:'Pulse Ghana',      cat:'ghana',  icon:'🇬🇭' },
+  { url:'https://www.myjoyonline.com/feed/',                        name:'JoyNews Ghana',    cat:'ghana',  icon:'🇬🇭' },
+  { url:'https://thebftonline.com/feed/',                           name:'BFT Ghana',        cat:'ghana',  icon:'🇬🇭' },
 
-  // 🌐 GLOBAL NEWS
-  { url:'http://feeds.bbci.co.uk/news/rss.xml',          name:'BBC News',         cat:'global',        icon:'🌐' },
-  { url:'https://www.aljazeera.com/xml/rss/all.xml',     name:'Al Jazeera',       cat:'global',        icon:'🌐' },
-  { url:'https://feeds.reuters.com/reuters/topNews',     name:'Reuters',          cat:'global',        icon:'🌐' },
-  { url:'https://apnews.com/index.rss',                  name:'AP News',          cat:'global',        icon:'🌐' },
-
-  // 💻 TECH
-  { url:'https://www.theverge.com/rss/index.xml',        name:'The Verge',        cat:'tech',          icon:'💻' },
-  { url:'https://techcrunch.com/feed/',                  name:'TechCrunch',       cat:'tech',          icon:'💻' },
-  { url:'https://feeds.wired.com/wired/index',           name:'Wired',            cat:'tech',          icon:'💻' },
-  { url:'https://www.engadget.com/rss.xml',              name:'Engadget',         cat:'tech',          icon:'💻' },
-  { url:'https://arstechnica.com/feed/',                 name:'Ars Technica',     cat:'tech',          icon:'💻' },
+  // 🌐 GLOBAL NEWS (no politics)
+  { url:'http://feeds.bbci.co.uk/news/world/rss.xml',              name:'BBC World',         cat:'global', icon:'🌐' },
+  { url:'https://feeds.reuters.com/reuters/topNews',               name:'Reuters',           cat:'global', icon:'🌐' },
+  { url:'https://apnews.com/index.rss',                            name:'AP News',           cat:'global', icon:'🌐' },
 
   // 🎬 ENTERTAINMENT
-  { url:'https://variety.com/feed/',                     name:'Variety',          cat:'entertainment', icon:'🎬' },
-  { url:'https://www.tmz.com/rss.xml',                   name:'TMZ',              cat:'entertainment', icon:'🎬' },
-  { url:'https://www.billboard.com/feed/',               name:'Billboard',        cat:'entertainment', icon:'🎬' },
-  { url:'https://deadline.com/feed/',                    name:'Deadline',         cat:'entertainment', icon:'🎬' },
-  { url:'https://people.com/feed/',                      name:'People',           cat:'entertainment', icon:'🎬' },
+  { url:'https://variety.com/feed/',                               name:'Variety',           cat:'entertainment', icon:'🎬' },
+  { url:'https://www.tmz.com/rss.xml',                             name:'TMZ',               cat:'entertainment', icon:'🎬' },
+  { url:'https://www.billboard.com/feed/',                         name:'Billboard',         cat:'entertainment', icon:'🎬' },
+  { url:'https://deadline.com/feed/',                              name:'Deadline',          cat:'entertainment', icon:'🎬' },
+  { url:'https://people.com/feed/',                                name:'People',            cat:'entertainment', icon:'🎬' },
+  { url:'https://www.etonline.com/rss/news.xml',                   name:'ET Online',         cat:'entertainment', icon:'🎬' },
+  { url:'https://hollywoodlife.com/feed/',                         name:'Hollywood Life',    cat:'entertainment', icon:'🎬' },
+
+  // 🎵 MUSIC
+  { url:'https://pitchfork.com/rss/news/feed.xml',                 name:'Pitchfork',         cat:'entertainment', icon:'🎵' },
+  { url:'https://www.rollingstone.com/music/music-news/feed/',     name:'Rolling Stone',     cat:'entertainment', icon:'🎵' },
 
   // ⚽ SPORTS
-  { url:'https://www.espn.com/espn/rss/news',            name:'ESPN',             cat:'sports',        icon:'⚽' },
-  { url:'https://bleacherreport.com/articles/feed',      name:'Bleacher Report',  cat:'sports',        icon:'⚽' },
-  { url:'https://www.skysports.com/rss/12040',           name:'Sky Sports',       cat:'sports',        icon:'⚽' },
+  { url:'https://www.espn.com/espn/rss/news',                      name:'ESPN',              cat:'sports', icon:'⚽' },
+  { url:'https://bleacherreport.com/articles/feed',                name:'Bleacher Report',   cat:'sports', icon:'⚽' },
+  { url:'https://www.skysports.com/rss/12040',                     name:'Sky Sports',        cat:'sports', icon:'⚽' },
+  { url:'https://www.goal.com/feeds/en/news',                      name:'Goal.com',          cat:'sports', icon:'⚽' },
+  { url:'https://www.sportsbible.com/rss',                         name:'Sports Bible',      cat:'sports', icon:'⚽' },
 
-  // 📈 BUSINESS
-  { url:'https://feeds.a.dj.com/rss/RSSMarketsMain.xml',name:'WSJ Markets',      cat:'business',      icon:'📈' },
-  { url:'https://www.cnbc.com/id/100003114/device/rss/rss.html', name:'CNBC',    cat:'business',      icon:'📈' },
-  { url:'https://fortune.com/feed/',                     name:'Fortune',          cat:'business',      icon:'📈' },
+  // 💻 TECH
+  { url:'https://www.theverge.com/rss/index.xml',                  name:'The Verge',         cat:'tech',   icon:'💻' },
+  { url:'https://techcrunch.com/feed/',                            name:'TechCrunch',        cat:'tech',   icon:'💻' },
+  { url:'https://feeds.wired.com/wired/index',                     name:'Wired',             cat:'tech',   icon:'💻' },
+  { url:'https://www.engadget.com/rss.xml',                        name:'Engadget',          cat:'tech',   icon:'💻' },
+  { url:'https://arstechnica.com/feed/',                           name:'Ars Technica',      cat:'tech',   icon:'💻' },
+
+  // 🎮 GAMING / STREAMING
+  { url:'https://www.ign.com/articles.rss',                        name:'IGN',               cat:'gaming', icon:'🎮' },
+  { url:'https://kotaku.com/feed/rss',                             name:'Kotaku',            cat:'gaming', icon:'🎮' },
+  { url:'https://www.pcgamer.com/rss/',                            name:'PC Gamer',          cat:'gaming', icon:'🎮' },
+  { url:'https://www.gamesradar.com/feeds/all',                    name:'Games Radar',       cat:'gaming', icon:'🎮' },
+
+  // 📈 BUSINESS (no politics)
+  { url:'https://fortune.com/feed/',                               name:'Fortune',           cat:'business', icon:'📈' },
+  { url:'https://www.cnbc.com/id/100003114/device/rss/rss.html',  name:'CNBC',              cat:'business', icon:'📈' },
+  { url:'https://www.forbes.com/business/feed/',                   name:'Forbes',            cat:'business', icon:'📈' },
 
   // 🛡️ CYBERSECURITY
-  { url:'https://feeds.feedburner.com/TheHackersNews',   name:'The Hacker News',  cat:'cyber',         icon:'🛡️' },
-  { url:'https://www.bleepingcomputer.com/feed/',        name:'BleepingComputer', cat:'cyber',         icon:'🛡️' },
-  { url:'https://krebsonsecurity.com/feed/',             name:'Krebs on Security',cat:'cyber',         icon:'🛡️' },
-  { url:'https://www.darkreading.com/rss.xml',           name:'Dark Reading',     cat:'cyber',         icon:'🛡️' },
-  { url:'https://feeds.feedburner.com/securityweek',    name:'SecurityWeek',     cat:'cyber',         icon:'🛡️' },
+  { url:'https://feeds.feedburner.com/TheHackersNews',             name:'The Hacker News',   cat:'cyber',  icon:'🛡️' },
+  { url:'https://www.bleepingcomputer.com/feed/',                  name:'BleepingComputer',  cat:'cyber',  icon:'🛡️' },
+  { url:'https://krebsonsecurity.com/feed/',                       name:'Krebs on Security', cat:'cyber',  icon:'🛡️' },
 ];
 
 let allNewsCache = [];
@@ -1987,7 +2071,7 @@ let currentFilter = 'all';
 const CAT_COLORS = {
   us:'badge-blue', ghana:'badge-green', global:'badge-purple',
   tech:'badge-blue', entertainment:'badge-orange', sports:'badge-yellow',
-  business:'badge-green', cyber:'badge-red'
+  business:'badge-green', cyber:'badge-red', gaming:'badge-purple'
 };
 
 async function fetchOneFeed(feed) {
@@ -2167,7 +2251,7 @@ async function callClaude(prompt, systemExtra='') {
 
 Brand voice: ${brandVoice}
 
-OffScript Media covers ALL trending topics — US news, Ghana news, global events, tech, entertainment, sports, business, cybersecurity. Not just one niche.
+OffScript Media covers: entertainment, sports, gaming, tech, Ghana news, US news (non-political), global events, business, cybersecurity. NEVER covers politics, politicians, political parties, elections, or political debates. If a trending story is political, skip it and find a different angle.
 
 Rules:
 - Write in Paul's authentic voice — real, direct, never stiff or corporate
@@ -2572,6 +2656,403 @@ function renderIncomeLog() {
 
 
 
+
+
+// ════════════════════════════════════════════
+// YOUTUBE API — LIVE STATS
+// ════════════════════════════════════════════
+const YT_CHANNEL_ID = localStorage.getItem('yt_channel_id') || 'UCtMhb7XZR6gET1HCwmYWntg';
+
+function toggleYTKey() {
+  const inp = document.getElementById('yt-api-key-input');
+  if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function saveYTKey() {
+  const key = document.getElementById('yt-api-key-input')?.value?.trim();
+  const channelId = document.getElementById('yt-channel-id')?.value?.trim() || 'UCtMhb7XZR6gET1HCwmYWntg';
+  if (!key) { toast('Enter your YouTube API key first', 'error'); return; }
+  localStorage.setItem('yt_api_key', key);
+  localStorage.setItem('yt_channel_id', channelId);
+  const status = document.getElementById('yt-api-status');
+  if (status) status.innerHTML = '<span style="color:var(--green);">✓ YouTube API key saved</span>';
+  toast('YouTube connected! Fetching live stats...', 'success');
+  fetchYouTubeStats();
+}
+
+async function testYTApi() {
+  const status = document.getElementById('yt-api-status');
+  if (status) status.innerHTML = '<span style="color:var(--text3);">Testing...</span>';
+  const result = await fetchYouTubeStats();
+  if (result && status) {
+    status.innerHTML = '<span style="color:var(--green);">✓ Connected! ' + result.subscribers + ' subscribers, ' + result.views + ' total views</span>';
+  } else if (status) {
+    status.innerHTML = '<span style="color:var(--red);">✗ Failed. Check your API key and make sure YouTube Data API v3 is enabled.</span>';
+  }
+}
+
+async function fetchYouTubeStats() {
+  const key = localStorage.getItem('yt_api_key');
+  const channelId = localStorage.getItem('yt_channel_id') || 'UCtMhb7XZR6gET1HCwmYWntg';
+  if (!key) return null;
+
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${key}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) {
+      console.error('YouTube API error:', data.error.message);
+      return null;
+    }
+
+    if (!data.items || !data.items.length) return null;
+
+    const stats = data.items[0].statistics;
+    const snippet = data.items[0].snippet;
+
+    const result = {
+      subscribers: parseInt(stats.subscriberCount || 0),
+      views: parseInt(stats.viewCount || 0),
+      videos: parseInt(stats.videoCount || 0),
+      title: snippet.title,
+      thumbnail: snippet.thumbnails?.default?.url
+    };
+
+    // Update dashboard stats
+    const saved = JSON.parse(localStorage.getItem('offscript_stats') || '{}');
+    saved.yt_f = result.subscribers;
+    saved.yt_v = result.views;
+    saved.yt_videos = result.videos;
+    saved.updated = new Date().toISOString();
+    localStorage.setItem('offscript_stats', JSON.stringify(saved));
+
+    // Update metric cards
+    updateDashboardStats(saved);
+
+    // Update YouTube card in monetize page
+    const ytSubEl = document.getElementById('yt-ypp-status');
+    if (ytSubEl) {
+      if (result.subscribers >= 1000) {
+        ytSubEl.innerHTML = '<span style="color:var(--green);">✓ Unlocked! ' + result.subscribers.toLocaleString() + ' subscribers</span>';
+      } else {
+        ytSubEl.textContent = result.subscribers.toLocaleString() + ' / 1,000 subscribers';
+      }
+      const bar = document.getElementById('yt-ypp-bar');
+      if (bar) bar.style.width = Math.min((result.subscribers/1000)*100, 100) + '%';
+    }
+
+    // Show YouTube stats badge on dashboard
+    updateYTBadge(result);
+
+    return result;
+  } catch(e) {
+    console.error('YouTube fetch error:', e);
+    return null;
+  }
+}
+
+function updateYTBadge(stats) {
+  // Update the YouTube row in analytics table if visible
+  const rows = document.querySelectorAll('#page-analytics .tbl tbody tr');
+  rows.forEach(row => {
+    if (row.textContent.includes('@OffScriptMediaGH') || row.textContent.includes('YouTube')) {
+      const cells = row.querySelectorAll('td');
+      if (cells[3]) cells[3].textContent = stats.subscribers.toLocaleString();
+      if (cells[4]) cells[4].textContent = stats.views.toLocaleString();
+      if (cells[2]) cells[2].innerHTML = '<span class="badge badge-green">Connected</span>';
+    }
+  });
+}
+
+// Auto-fetch YouTube stats on load if key exists
+async function initYouTubeStats() {
+  const key = localStorage.getItem('yt_api_key');
+  const channelId = localStorage.getItem('yt_channel_id') || 'UCtMhb7XZR6gET1HCwmYWntg';
+
+  // Pre-fill settings fields
+  const keyInput = document.getElementById('yt-api-key-input');
+  const channelInput = document.getElementById('yt-channel-id');
+  if (keyInput && key) keyInput.value = key;
+  if (channelInput) channelInput.value = channelId;
+
+  if (key) {
+    const status = document.getElementById('yt-api-status');
+    if (status) status.innerHTML = '<span style="color:var(--text3);">Fetching YouTube stats...</span>';
+    const result = await fetchYouTubeStats();
+    if (result && status) {
+      status.innerHTML = '<span style="color:var(--green);">✓ Live — ' + result.subscribers.toLocaleString() + ' subscribers · ' + result.videos + ' videos</span>';
+    }
+  }
+}
+
+// Show YouTube stats on dashboard in a mini card
+function showYTLiveCard(stats) {
+  const existing = document.getElementById('yt-live-card');
+  if (existing) existing.remove();
+  const bar = document.getElementById('stats-update-bar');
+  if (!bar) return;
+  const card = document.createElement('div');
+  card.id = 'yt-live-card';
+  card.style.cssText = 'background:var(--red-bg);border:1px solid var(--red);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;';
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;background:#ff0000;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">▶</div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);">YOUTUBE LIVE</div>
+        <div style="font-size:13px;font-weight:700;">@OffScriptMediaGH</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${stats.subscribers.toLocaleString()}</div><div style="font-size:10px;color:var(--text3);">SUBSCRIBERS</div></div>
+      <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${stats.views.toLocaleString()}</div><div style="font-size:10px;color:var(--text3);">TOTAL VIEWS</div></div>
+      <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${stats.videos}</div><div style="font-size:10px;color:var(--text3);">VIDEOS</div></div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="fetchYouTubeStats()" style="margin-left:auto;">↻ Refresh</button>`;
+  bar.after(card);
+}
+
+
+// ════════════════════════════════════════════
+// YOUTUBE API INTEGRATION
+// ════════════════════════════════════════════
+// YT_CHANNEL_ID defined above
+
+function saveYTKey() {
+  const key = document.getElementById('yt-api-key-input')?.value?.trim();
+  if (!key) { toast('Enter your Google API key first', 'error'); return; }
+  localStorage.setItem('offscript_yt_key', key);
+  const el = document.getElementById('yt-key-status');
+  if (el) el.innerHTML = '<span style="color:var(--green);">✓ YouTube key saved — testing...</span>';
+  toast('YouTube key saved!', 'success');
+  testYouTubeAPI();
+}
+
+function toggleYTKey() {
+  const inp = document.getElementById('yt-api-key-input');
+  if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function testYouTubeAPI() {
+  const key = localStorage.getItem('offscript_yt_key');
+  const el = document.getElementById('yt-key-status');
+  if (!key) {
+    if (el) el.innerHTML = '<span style="color:var(--orange);">Add your Google API key above first</span>';
+    return;
+  }
+  if (el) el.innerHTML = '<span style="color:var(--text3);">Testing connection...</span>';
+  try {
+    const data = await fetchYouTubeStats();
+    if (data && el) {
+      el.innerHTML = '<span style="color:var(--green);">✓ Connected! ' + (data.subscribers||0).toLocaleString() + ' subscribers, ' + (data.views||0).toLocaleString() + ' total views</span>';
+    }
+  } catch(e) {
+    if (el) el.innerHTML = '<span style="color:var(--red);">Error: ' + e.message + '. Check your API key and make sure YouTube Data API v3 is enabled.</span>';
+  }
+}
+
+async function fetchYouTubeStats() {
+  const key = localStorage.getItem('offscript_yt_key');
+  if (!key) throw new Error('No YouTube API key saved');
+
+  // Fetch channel stats
+  const channelRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${YT_CHANNEL_ID}&key=${key}`
+  );
+  const channelData = await channelRes.json();
+
+  if (channelData.error) throw new Error(channelData.error.message);
+  if (!channelData.items?.length) throw new Error('Channel not found. Check Channel ID.');
+
+  const stats = channelData.items[0].statistics;
+  const snippet = channelData.items[0].snippet;
+
+  // Fetch latest videos
+  const videosRes = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${YT_CHANNEL_ID}&order=date&maxResults=5&type=video&key=${key}`
+  );
+  const videosData = await videosRes.json();
+  const latestVideos = videosData.items || [];
+
+  const result = {
+    subscribers: parseInt(stats.subscriberCount) || 0,
+    views: parseInt(stats.viewCount) || 0,
+    videoCount: parseInt(stats.videoCount) || 0,
+    channelName: snippet.title,
+    latestVideos: latestVideos.map(v => ({
+      title: v.snippet.title,
+      thumbnail: v.snippet.thumbnails?.medium?.url,
+      videoId: v.id.videoId,
+      published: v.snippet.publishedAt,
+    }))
+  };
+
+  // Cache it
+  localStorage.setItem('offscript_yt_stats', JSON.stringify({...result, fetched: Date.now()}));
+  return result;
+}
+
+async function loadYouTubeStats() {
+  const key = localStorage.getItem('offscript_yt_key');
+  if (!key) return null;
+
+  // Use cache if less than 30 minutes old
+  const cached = JSON.parse(localStorage.getItem('offscript_yt_stats') || '{}');
+  if (cached.fetched && (Date.now() - cached.fetched) < 1800000) return cached;
+
+  try {
+    return await fetchYouTubeStats();
+  } catch(e) {
+    console.warn('YouTube API error:', e.message);
+    return cached.subscribers ? cached : null;
+  }
+}
+
+async function renderYouTubeOnDashboard() {
+  const ytStats = await loadYouTubeStats();
+  if (!ytStats) return;
+
+  // Update the YouTube row in stats modal defaults
+  const ytInput = document.getElementById('s-yt-f');
+  const ytViews = document.getElementById('s-yt-v');
+  if (ytInput && ytStats.subscribers) ytInput.value = ytStats.subscribers;
+  if (ytViews && ytStats.views) ytViews.value = ytStats.views;
+
+  // Update main dashboard stats automatically
+  const saved = JSON.parse(localStorage.getItem('offscript_stats') || '{}');
+  saved.yt_f = ytStats.subscribers;
+  saved.yt_v = ytStats.views;
+  if (!saved.updated) saved.updated = new Date().toISOString();
+  localStorage.setItem('offscript_stats', JSON.stringify(saved));
+  updateDashboardStats(saved);
+
+  // Show latest videos in a dashboard card if it exists
+  renderLatestYouTubeVideos(ytStats);
+}
+
+function renderLatestYouTubeVideos(ytStats) {
+  // Show the YouTube stats card
+  const card = document.getElementById('yt-stats-card');
+  if (card) card.style.display = 'block';
+
+  // Update subscriber/view/video counts
+  function fmtN(n) { if(n>=1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(1)+'K'; return String(n); }
+  const subsEl = document.getElementById('yt-subs-display');
+  const viewsEl = document.getElementById('yt-views-display');
+  const vidsEl = document.getElementById('yt-videos-display');
+  if (subsEl) subsEl.textContent = fmtN(ytStats.subscribers || 0);
+  if (viewsEl) viewsEl.textContent = fmtN(ytStats.views || 0);
+  if (vidsEl) vidsEl.textContent = ytStats.videoCount || 0;
+
+  // Render latest videos
+  const el = document.getElementById('yt-videos-card');
+  if (!el || !ytStats.latestVideos?.length) {
+    if (el) el.innerHTML = '<div style="color:var(--text3);font-size:12px;">No videos yet. Upload your first video!</div>';
+    return;
+  }
+  el.innerHTML = ytStats.latestVideos.slice(0,3).map(v =>
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
+    + (v.thumbnail ? '<img src="'+v.thumbnail+'" style="width:80px;height:45px;object-fit:cover;border-radius:4px;flex-shrink:0;">' : '<div style="width:80px;height:45px;background:var(--bg3);border-radius:4px;flex-shrink:0;"></div>')
+    + '<div style="flex:1;min-width:0;">'
+    + '<div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+v.title+'</div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-top:2px;">'+new Date(v.published).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</div>'
+    + '</div>'
+    + '<a href="https://youtube.com/watch?v='+v.videoId+'" target="_blank" class="btn btn-ghost btn-xs">View</a>'
+    + '</div>'
+  ).join('');
+}
+
+// ════════════════════════════════════════════
+// STATS MODAL
+// ════════════════════════════════════════════
+function openStatsModal() {
+  const modal = document.getElementById('stats-modal');
+  if (!modal) return;
+  // Load saved values
+  const saved = JSON.parse(localStorage.getItem('offscript_stats') || '{}');
+  const fields = ['s-tt-f','s-tt-v','s-ig-f','s-ig-v','s-yt-f','s-yt-v','s-tw-f','s-tw-v','s-li-f','s-eng','s-comments'];
+  const keys  = ['tt_f','tt_v','ig_f','ig_v','yt_f','yt_v','tw_f','tw_v','li_f','eng','comments'];
+  fields.forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el && saved[keys[i]]) el.value = saved[keys[i]];
+  });
+  modal.style.display = 'flex';
+}
+
+function closeStatsModal() {
+  const modal = document.getElementById('stats-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveStats() {
+  const get = id => parseInt(document.getElementById(id)?.value) || 0;
+  const stats = {
+    tt_f: get('s-tt-f'), tt_v: get('s-tt-v'),
+    ig_f: get('s-ig-f'), ig_v: get('s-ig-v'),
+    yt_f: get('s-yt-f'), yt_v: get('s-yt-v'),
+    tw_f: get('s-tw-f'), tw_v: get('s-tw-v'),
+    li_f: get('s-li-f'),
+    eng: get('s-eng'), comments: get('s-comments'),
+    updated: new Date().toISOString()
+  };
+  localStorage.setItem('offscript_stats', JSON.stringify(stats));
+
+  // Also save to growth tracker
+  const followers = { tt: stats.tt_f, ig: stats.ig_f, yt: stats.yt_f, tw: stats.tw_f, li: stats.li_f };
+  localStorage.setItem('offscript_followers', JSON.stringify(followers));
+  localStorage.setItem('offscript_growth_prev', JSON.stringify(followers));
+
+  updateDashboardStats(stats);
+  closeStatsModal();
+  toast('Stats updated!', 'success');
+}
+
+function updateDashboardStats(stats) {
+  if (!stats) stats = JSON.parse(localStorage.getItem('offscript_stats') || '{}');
+  const totalFollowers = (stats.tt_f||0) + (stats.ig_f||0) + (stats.yt_f||0) + (stats.tw_f||0) + (stats.li_f||0);
+  const totalViews = (stats.tt_v||0) + (stats.ig_v||0) + (stats.yt_v||0) + (stats.tw_v||0);
+
+  function fmt(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  const mf = document.getElementById('m-followers');
+  const mv = document.getElementById('m-views');
+  const me = document.getElementById('m-eng');
+  const mc = document.getElementById('m-comments');
+  const mfd = document.getElementById('m-followers-d');
+  const mvd = document.getElementById('m-views-d');
+  const med = document.getElementById('m-eng-d');
+  const mcd = document.getElementById('m-comments-d');
+
+  if (mf) mf.textContent = fmt(totalFollowers);
+  if (mv) mv.textContent = fmt(totalViews);
+  if (me) me.textContent = fmt(stats.eng||0);
+  if (mc) mc.textContent = fmt(stats.comments||0);
+
+  if (stats.updated) {
+    const d = new Date(stats.updated);
+    const when = d.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    if (mfd) { mfd.textContent = 'Updated ' + when; mfd.style.color = 'var(--green)'; }
+    if (mvd) { mvd.textContent = 'TT+IG+YT+X combined'; mvd.style.color = 'var(--text3)'; }
+    if (med) { med.textContent = 'Across all platforms'; med.style.color = 'var(--text3)'; }
+    if (mcd) { mcd.textContent = 'Across all platforms'; mcd.style.color = 'var(--text3)'; }
+    // Hide update bar once stats are entered
+    const bar = document.getElementById('stats-update-bar');
+    if (bar && totalFollowers > 0) bar.style.background = 'var(--green-bg)';
+  } else {
+    if (mfd) { mfd.textContent = 'Click to update →'; mfd.style.color = 'var(--text3)'; }
+  }
+}
+
+// Close modal on background click
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('stats-modal');
+  if (modal && e.target === modal) closeStatsModal();
+});
+
 // ════════════════════════════════════════════
 // CONTENT STUDIO
 // ════════════════════════════════════════════
@@ -2617,7 +3098,7 @@ async function generateYouTubeScript() {
   if (!topic) { toast('Enter a topic first', 'error'); return; }
   showLoading(el);
   try {
-    const text = await callClaude(`Write a complete YouTube video script for @OffScriptMedia about: "${topic}".
+    const text = await callClaude(`Write a complete YouTube video script for @OffScriptMediaGH about: "${topic}".
 Type: ${type}. Target audience: ${audience}.
 
 Format:
@@ -2678,7 +3159,7 @@ async function generateThumbnailIdeas() {
   showLoading(el);
   el.style.display = 'block';
   try {
-    const text = await callClaude(`Generate 5 YouTube thumbnail concepts + titles for @OffScriptMedia video about: "${topic}".
+    const text = await callClaude(`Generate 5 YouTube thumbnail concepts + titles for @OffScriptMediaGH video about: "${topic}".
 
 For each:
 TITLE: [clickable YouTube title, max 60 chars]
@@ -2889,7 +3370,7 @@ const MT_SCHEDULE = {
 
 const PLAT_ICONS = {tiktok:'TT',instagram:'📸',twitter:'𝕏',linkedin:'in',youtube:'▶'};
 const PLAT_COLORS = {tiktok:'#010101',instagram:'#e1306c',twitter:'#111',linkedin:'#0077b5',youtube:'#ff0000'};
-const PLAT_HANDLES = {tiktok:'@offscript_media',instagram:'@offscript__media',twitter:'@offscrip_tmedia',linkedin:'OffScript Media',youtube:'@OffScriptMedia'};
+const PLAT_HANDLES = {tiktok:'@offscript_media',instagram:'@offscript__media',twitter:'@offscrip_tmedia',linkedin:'OffScript Media',youtube:'@OffScriptMediaGH'};
 
 function getNextPostTime(platform) {
   const now = new Date();
@@ -2955,15 +3436,17 @@ async function loadSmartSuggestions(forceRefresh = false) {
     }
 
     const prompt = `You are the content strategist for OffScript Media (Paul Agyare). 
-Accounts: TikTok @offscript_media, Instagram @offscript__media, X @offscrip_tmedia, LinkedIn OffScript Media, YouTube @OffScriptMedia.
-Audience: US + Ghana + global, ages 18-35, interested in news, tech, entertainment, sports, culture.
+Accounts: TikTok @offscript_media, Instagram @offscript__media, X @offscrip_tmedia, LinkedIn OffScript Media, YouTube @OffScriptMediaGH.
+Audience: US + Ghana + global, ages 18-35, interested in entertainment, sports, gaming, tech, Ghana culture, and world news.
+
+IMPORTANT: Skip any political stories (elections, politicians, political parties, government debates). Focus on entertainment, sports, gaming, tech, celebrity news, Ghana news, and viral moments.
 
 Here are the top trending stories RIGHT NOW:
 ${storiesList}
 
-Pick the 3 best stories to post about TODAY. For each one:
+Pick the 3 best NON-POLITICAL stories to post about TODAY. For each one:
 1. Which platform fits best and why (pick ONE primary platform)
-2. Write the actual post copy ready to copy-paste (platform-appropriate length/format)
+2. Write the actual post copy ready to copy-paste (platform-appropriate length/format, Gen Z friendly)
 3. Best time to post in Mountain Time
 
 Respond ONLY as a JSON array, no explanation:
