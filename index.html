@@ -2945,8 +2945,7 @@ async function loadSmartSuggestions(forceRefresh = false) {
   const topStories = newsItems.slice(0, 8);
 
   // Ask Claude to analyze and generate smart suggestions
-  const storiesList = topStories.map((s,i) => `${i+1}. [${s.cat?.toUpperCase()}] ${s.title} (${s.source})`).join('
-');
+  const storiesList = topStories.map((s,i) => `${i+1}. [${s.cat?.toUpperCase()}] ${s.title} (${s.source})`).join('\n');
 
   try {
     const key = localStorage.getItem('offscript_api_key');
@@ -3028,7 +3027,7 @@ function renderSmartSuggestions(suggestions) {
       +'<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;padding:10px;background:var(--bg4);border-radius:var(--r-sm);">'+(s.post||'')+'</div>'
       +'<div style="display:flex;gap:6px;">'
       +'<button class="btn btn-primary btn-xs" onclick="copySuggestion('+idx+')">Copy &amp; Post</button>'
-      +'<button class="btn btn-secondary btn-xs" onclick="document.getElementById('ai-topic').value=''+safeStory+'';nav('content');">Variations</button>'
+      +'<button class="btn btn-secondary btn-xs" onclick="genFromNews(this.dataset.story)" data-story="'+safeStory+'">Variations</button>'
       +'</div></div>';
   }).join('');
 }
@@ -3039,3 +3038,7 @@ function copySuggestion(idx) {
   navigator.clipboard.writeText(s.post).then(() => toast('Copied! Go post it now', 'success'));
 }
 
+
+</script>
+</body>
+</html>
