@@ -3012,231 +3012,30 @@ Respond ONLY as a JSON array, no explanation:
 function renderSmartSuggestions(suggestions) {
   const el = document.getElementById('smart-suggestions');
   if (!el || !suggestions?.length) return;
-  el.innerHTML = suggestions.map(s => {
+  window._suggestions = suggestions;
+  el.innerHTML = suggestions.map((s, idx) => {
     const color = PLAT_COLORS[s.platform] || '#ff6b2c';
-    const icon = PLAT_ICONS[s.platform] || '📱';
+    const icon = PLAT_ICONS[s.platform] || '?';
     const handle = PLAT_HANDLES[s.platform] || '';
     const nextTime = s.time || getNextPostTime(s.platform);
-    const safe = (s.post||'').replace(/`/g,"'");
-    return `
-    <div style="padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;border-left:3px solid ${color};">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <div style="width:26px;height:26px;background:${color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${icon}</div>
-        <div>
-          <div style="font-size:12px;font-weight:700;">${s.platform?.toUpperCase()} — ${handle}</div>
-          <div style="font-size:10px;color:var(--text3);">${s.reason}</div>
-        </div>
-        <div style="margin-left:auto;text-align:right;">
-          <div style="font-size:11px;font-weight:700;color:var(--orange);">⏰ ${nextTime}</div>
-          <div style="font-size:10px;color:var(--text3);">post now</div>
-        </div>
-      </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;padding:10px;background:var(--bg4);border-radius:var(--r-sm);">${s.post}</div>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-primary btn-xs" onclick="navigator.clipboard.writeText(\`${safe}\`).then(()=>showToast('Copied! Go post it now 🚀','success'))">📋 Copy & Post</button>
-        <button class="btn btn-secondary btn-xs" onclick="document.getElementById('ai-topic').value='${s.story?.replace(/'/g,'')}';nav('content');">✨ Generate variations</button>
-      </div>
-    </div>`;
+    const safeStory = (s.story||'').replace(/'/g,'').replace(/"/g,'').slice(0,60);
+    return '<div style="padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;border-left:3px solid '+color+';">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+      +'<div style="width:26px;height:26px;background:'+color+';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">'+icon+'</div>'
+      +'<div><div style="font-size:12px;font-weight:700;">'+(s.platform||'').toUpperCase()+' - '+handle+'</div>'
+      +'<div style="font-size:10px;color:var(--text3);">'+(s.reason||'')+'</div></div>'
+      +'<div style="margin-left:auto;"><div style="font-size:11px;font-weight:700;color:var(--orange);">Post time: '+nextTime+'</div></div></div>'
+      +'<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:10px;padding:10px;background:var(--bg4);border-radius:var(--r-sm);">'+(s.post||'')+'</div>'
+      +'<div style="display:flex;gap:6px;">'
+      +'<button class="btn btn-primary btn-xs" onclick="copySuggestion('+idx+')">Copy &amp; Post</button>'
+      +'<button class="btn btn-secondary btn-xs" onclick="document.getElementById('ai-topic').value=''+safeStory+'';nav('content');">Variations</button>'
+      +'</div></div>';
   }).join('');
 }
 
-function renderFallbackSuggestions(stories) {
-  const el = document.getElementById('smart-suggestions');
-  const timeEl = document.getElementById('suggestions-time');
-  if (!el) return;
-  if (timeEl) timeEl.textContent = 'Add API key for AI suggestions';
-
-  const platforms = ['tiktok','twitter','instagram'];
-  el.innerHTML = stories.slice(0,3).map((s, i) => {
-    const plat = platforms[i] || 'twitter';
-    const color = PLAT_COLORS[plat];
-    const icon = PLAT_ICONS[plat];
-    const handle = PLAT_HANDLES[plat];
-    const nextTime = getNextPostTime(plat);
-    return `
-    <div style="padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px;border-left:3px solid ${color};">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <div style="width:26px;height:26px;background:${color};border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;">${icon}</div>
-        <div>
-          <div style="font-size:12px;font-weight:700;">${plat.toUpperCase()} — ${handle}</div>
-          <div style="font-size:10px;color:var(--text3);">${s.source} · ${s.cat?.toUpperCase()}</div>
-        </div>
-        <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--orange);">⏰ ${nextTime}</div>
-      </div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;">${s.title}</div>
-      <button class="btn btn-primary btn-xs" onclick="document.getElementById('ai-topic').value='${s.title.replace(/'/g,'')}';nav('content');">✨ Generate post from this</button>
-    </div>`;
-  }).join('');
+function copySuggestion(idx) {
+  const s = window._suggestions && window._suggestions[idx];
+  if (!s || !s.post) return;
+  navigator.clipboard.writeText(s.post).then(() => toast('Copied! Go post it now', 'success'));
 }
 
-function showToast(msg, type) { toast(msg, type); }
-
-// ════════════════════════════════════════════
-// GROWTH ENGINE
-// ════════════════════════════════════════════
-let growthChart = null;
-const LAUNCH_DATE = new Date('2026-06-18');
-
-function updateGrowthDash() {
-  const tt = parseInt(document.getElementById('g-tiktok')?.value) || 0;
-  const ig = parseInt(document.getElementById('g-instagram')?.value) || 0;
-  const yt = parseInt(document.getElementById('g-youtube')?.value) || 0;
-  const tw = parseInt(document.getElementById('g-twitter')?.value) || 0;
-  const li = parseInt(document.getElementById('g-linkedin')?.value) || 0;
-  const total = tt + ig + yt + tw + li;
-
-  const totalEl = document.getElementById('g-total');
-  if (totalEl) totalEl.textContent = total.toLocaleString();
-
-  const to10k = document.getElementById('g-to10k');
-  if (to10k) to10k.textContent = Math.max(0, 10000 - total).toLocaleString();
-
-  const days = Math.floor((Date.now() - LAUNCH_DATE) / 86400000);
-  const daysEl = document.getElementById('g-days');
-  if (daysEl) daysEl.textContent = days || 1;
-
-  const remaining = Math.max(0, 10000 - total);
-  const daysLeft = Math.max(1, 365 - days);
-  const perDay = document.getElementById('g-perday');
-  if (perDay) perDay.textContent = Math.ceil(remaining / daysLeft);
-
-  // Load previous day deltas
-  const prev = JSON.parse(localStorage.getItem('offscript_growth_prev') || '{}');
-  const deltas = {tt, ig, yt, tw, li};
-  const ids = ['g-tt-delta','g-ig-delta','g-yt-delta','g-tw-delta','g-li-delta'];
-  const keys = ['tt','ig','yt','tw','li'];
-  keys.forEach((k,i) => {
-    const el = document.getElementById(ids[i]);
-    if (!el) return;
-    const d = (deltas[k] || 0) - (prev[k] || 0);
-    el.textContent = d > 0 ? '+' + d + ' since last save' : d < 0 ? d + ' since last save' : 'No change';
-    el.style.color = d > 0 ? 'var(--green)' : d < 0 ? 'var(--red)' : 'var(--text3)';
-  });
-}
-
-function saveFollowerData() {
-  const tt = parseInt(document.getElementById('g-tiktok')?.value) || 0;
-  const ig = parseInt(document.getElementById('g-instagram')?.value) || 0;
-  const yt = parseInt(document.getElementById('g-youtube')?.value) || 0;
-  const tw = parseInt(document.getElementById('g-twitter')?.value) || 0;
-  const li = parseInt(document.getElementById('g-linkedin')?.value) || 0;
-  const data = {tt, ig, yt, tw, li, date: new Date().toISOString()};
-  // Save as prev for delta calc
-  localStorage.setItem('offscript_growth_prev', JSON.stringify({tt, ig, yt, tw, li}));
-  // Append to history
-  const history = JSON.parse(localStorage.getItem('offscript_growth_history') || '[]');
-  history.push(data);
-  localStorage.setItem('offscript_growth_history', JSON.stringify(history));
-  // Also update monetize tracker
-  localStorage.setItem('offscript_followers', JSON.stringify({tt, ig, yt, tw, li}));
-  updateGrowthDash();
-  updateGrowthChart();
-  toast('Growth data saved!', 'success');
-}
-
-function addGrowthEntry() {
-  saveFollowerData();
-}
-
-function updateGrowthChart() {
-  const ctx = document.getElementById('growthChart');
-  if (!ctx) return;
-  const history = JSON.parse(localStorage.getItem('offscript_growth_history') || '[]');
-  if (!history.length) return;
-  const labels = history.map(h => new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
-  const totals = history.map(h => (h.tt||0)+(h.ig||0)+(h.yt||0)+(h.tw||0)+(h.li||0));
-  if (growthChart) growthChart.destroy();
-  growthChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Total Followers',
-        data: totals,
-        borderColor: '#ff6b2c',
-        backgroundColor: 'rgba(255,107,44,0.1)',
-        tension: 0.4, fill: true, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#ff6b2c'
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {legend:{display:false}, tooltip:{backgroundColor:'#1c2230',titleColor:'#eef0f8',bodyColor:'#8892aa'}},
-      scales: {
-        x: {grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#50586e',font:{size:11}}},
-        y: {grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#50586e',font:{size:11}}, beginAtZero:true}
-      }
-    }
-  });
-}
-
-async function getGrowthAdvice(type) {
-  const el = document.getElementById('growth-advice-result');
-  const prompts = {
-    tiktok: 'Give me a specific TikTok growth strategy for @offscript_media — a media brand covering US news, Ghana news, tech, entertainment. I just started. What content formats, hooks, posting frequency, and tactics will get me to 10K followers fastest? Be very specific with examples.',
-    instagram: 'Give me a specific Instagram growth strategy for @offscript__media — new account, media brand. What Reels, carousels, Stories to post. How to use hashtags in 2026. Specific content ideas for US + Ghana audience.',
-    viral: 'What type of content goes viral fastest on TikTok and X/Twitter in 2026 for a media/news brand? Give me 5 specific viral content formulas I can use TODAY with OffScript Media covering US news, Ghana news, tech and entertainment.',
-    ghana: 'How do I specifically grow a Ghanaian audience on social media from the US? What topics, hashtags, posting times (Ghana time vs Mountain Time), and content angles work best for reaching people in Ghana on TikTok, Instagram, and X?',
-    monetize_fast: 'I just created OffScript Media accounts on TikTok, Instagram, YouTube, X, and LinkedIn. How do I start making money as fast as possible even with small follower counts? Give me specific steps for the first 30 days.',
-  };
-  showLoading(el);
-  el.style.display = 'block';
-  try {
-    const text = await callClaude(prompts[type] || prompts.tiktok);
-    showResult(el, text);
-  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">Error: ${e.message}</span></div>`; }
-}
-
-async function getCustomGrowthAdvice() {
-  const q = document.getElementById('growth-custom-q')?.value?.trim();
-  if (!q) { toast('Type a question first', 'error'); return; }
-  const el = document.getElementById('growth-advice-result');
-  showLoading(el);
-  el.style.display = 'block';
-  try {
-    const text = await callClaude(`Growth question for OffScript Media (TikTok: @offscript_media, Instagram: @offscript__media, YouTube: @OffScriptMedia, X: @offscrip_tmedia, LinkedIn: OffScript Media). Question: ${q}`);
-    showResult(el, text);
-  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">Error: ${e.message}</span></div>`; }
-}
-
-// ════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  // Null-safe date display
-  const dateEl = document.getElementById('dash-date');
-  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-
-  // API key
-  const keyInput = document.getElementById('api-key-input');
-  const keyStatus = document.getElementById('api-key-status');
-  const savedKey = localStorage.getItem('offscript_api_key');
-  if (savedKey) {
-    apiKey = savedKey;
-    if (keyInput) keyInput.value = savedKey;
-    if (keyStatus) keyStatus.innerHTML = '<span style="color:var(--green);">✓ Key active — AI features live</span>';
-  } else {
-    if (keyStatus) keyStatus.innerHTML = '<span style="color:var(--orange);">⚠️ No API key — add yours below</span>';
-    const banner = document.getElementById('setup-banner');
-    if (banner) banner.style.display = 'flex';
-  }
-
-  // Brand voice
-  const savedVoice = localStorage.getItem('offscript_brand_voice');
-  if (savedVoice) {
-    const bvi = document.getElementById('brand-voice-input');
-    if (bvi) bvi.value = savedVoice;
-    brandVoice = savedVoice;
-  }
-
-  // Chart
-  initChart();
-  const cr7 = document.getElementById('cr7');
-  if (cr7) cr7.classList.add('btn-primary');
-
-  // Load live global news on startup
-  loadDashboardNews();
-  setTimeout(loadSmartSuggestions, 3000);
-});
-</script>
-</body>
-</html>
