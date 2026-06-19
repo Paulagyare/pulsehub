@@ -346,6 +346,11 @@ input,textarea,select{font-family:inherit;}
         AI Content
         <span class="nav-badge">AI</span>
       </button>
+      <button class="nav-item" onclick="nav('studio')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="5"/><path d="M6 6l5 2-5 2V6z"/></svg>
+        Content Studio
+        <span class="nav-badge" style="background:var(--purple);">NEW</span>
+      </button>
       <button class="nav-item" onclick="nav('schedule')">
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="11" rx="1"/><path d="M5 1v4M11 1v4M1 7h14"/></svg>
         Schedule
@@ -1507,6 +1512,258 @@ input,textarea,select{font-family:inherit;}
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════════════
+     PAGE: CONTENT STUDIO
+══════════════════════════════════════════════ -->
+<div class="page" id="page-studio">
+  <div class="page-hd">
+    <h1>🎬 Content Studio</h1>
+    <p>Scripts, images, carousels — everything you need to create videos and posts for TikTok, Instagram & YouTube</p>
+  </div>
+
+  <!-- TOOL SHORTCUTS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+    <a href="https://www.canva.com" target="_blank" style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);text-align:center;text-decoration:none;transition:border 0.2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:24px;margin-bottom:6px;">🎨</div>
+      <div style="font-size:13px;font-weight:600;">Canva</div>
+      <div style="font-size:11px;color:var(--text3);">Free graphics & thumbnails</div>
+    </a>
+    <a href="https://www.capcut.com" target="_blank" style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);text-align:center;text-decoration:none;transition:border 0.2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:24px;margin-bottom:6px;">✂️</div>
+      <div style="font-size:13px;font-weight:600;">CapCut</div>
+      <div style="font-size:11px;color:var(--text3);">Free video editing + AI</div>
+    </a>
+    <a href="https://www.pexels.com/videos/" target="_blank" style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);text-align:center;text-decoration:none;transition:border 0.2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:24px;margin-bottom:6px;">🎥</div>
+      <div style="font-size:13px;font-weight:600;">Pexels Videos</div>
+      <div style="font-size:11px;color:var(--text3);">Free B-roll footage</div>
+    </a>
+    <a href="https://unsplash.com" target="_blank" style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);text-align:center;text-decoration:none;transition:border 0.2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:24px;margin-bottom:6px;">📷</div>
+      <div style="font-size:13px;font-weight:600;">Unsplash</div>
+      <div style="font-size:11px;color:var(--text3);">Free photos for posts</div>
+    </a>
+  </div>
+
+  <div class="tabs" id="studio-tabs">
+    <button class="tab-btn active" onclick="switchTab('tiktok-script','studio-tabs')">🎵 TikTok Script</button>
+    <button class="tab-btn" onclick="switchTab('yt-script','studio-tabs')">▶ YouTube Script</button>
+    <button class="tab-btn" onclick="switchTab('ig-carousel','studio-tabs')">📸 Instagram Carousel</button>
+    <button class="tab-btn" onclick="switchTab('thumbnail','studio-tabs')">🖼️ Thumbnail Ideas</button>
+    <button class="tab-btn" onclick="switchTab('image-finder','studio-tabs')">🔍 Image Finder</button>
+  </div>
+
+  <!-- TIKTOK SCRIPT -->
+  <div id="st-tiktok-script">
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd"><h3>🎵 TikTok Video Script</h3></div>
+        <div class="form-group"><label class="form-label">What's the video about?</label>
+          <textarea id="tt-topic" class="input textarea" rows="3" placeholder="e.g. Knicks championship parade, Ghana election results, AI replacing jobs, cybersecurity tips..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Video length</label>
+            <select id="tt-length" class="input select">
+              <option>15 seconds (quick take)</option>
+              <option>30 seconds (standard)</option>
+              <option>60 seconds (deep dive)</option>
+              <option>3 minutes (story format)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Style</label>
+            <select id="tt-style" class="input select">
+              <option>News reaction / commentary</option>
+              <option>POV / storytelling</option>
+              <option>Educational breakdown</option>
+              <option>Hot take / opinion</option>
+              <option>Day in the life</option>
+              <option>List / tips format</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Hook type</label>
+          <select id="tt-hook" class="input select">
+            <option>Shocking fact opener</option>
+            <option>Question hook ("Did you know...")</option>
+            <option>Controversy hook ("Unpopular opinion...")</option>
+            <option>Story hook ("So this just happened...")</option>
+            <option>Challenge hook ("Watch till the end...")</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="generateTikTokScript()">✨ Write TikTok Script</button>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>Your Script</h3></div>
+        <div id="tt-script-result">
+          <div class="empty-state"><div class="es-icon">🎵</div><h3>Script will appear here</h3><p>Fill in the details and hit generate. You'll get a word-for-word script to read on camera.</p></div>
+        </div>
+        <div id="tt-broll" style="display:none;margin-top:12px;"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-hd"><h3>📱 How to film this on your phone</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="padding:12px;background:var(--bg3);border-radius:var(--r-sm);text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">📸</div>
+          <div style="font-size:12px;font-weight:600;">Vertical video</div>
+          <div style="font-size:11px;color:var(--text3);">9:16 ratio. Hold phone upright. Film in 1080p.</div>
+        </div>
+        <div style="padding:12px;background:var(--bg3);border-radius:var(--r-sm);text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">💡</div>
+          <div style="font-size:12px;font-weight:600;">Lighting</div>
+          <div style="font-size:11px;color:var(--text3);">Face a window. Natural light = free ring light. No overhead lights.</div>
+        </div>
+        <div style="padding:12px;background:var(--bg3);border-radius:var(--r-sm);text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">🎙️</div>
+          <div style="font-size:12px;font-weight:600;">Audio</div>
+          <div style="font-size:11px;color:var(--text3);">Use earphones as mic. Quiet room. Speak close to phone.</div>
+        </div>
+        <div style="padding:12px;background:var(--bg3);border-radius:var(--r-sm);text-align:center;">
+          <div style="font-size:20px;margin-bottom:6px;">✂️</div>
+          <div style="font-size:12px;font-weight:600;">Edit in CapCut</div>
+          <div style="font-size:11px;color:var(--text3);">Free app. Auto-captions, trending sounds, cut dead air.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YOUTUBE SCRIPT -->
+  <div id="st-yt-script" style="display:none;">
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd"><h3>▶ YouTube Video Script</h3></div>
+        <div class="form-group"><label class="form-label">Video topic</label>
+          <textarea id="yt-topic" class="input textarea" rows="3" placeholder="e.g. How I passed CompTIA Security+, Ghana vs USA cost of living, Top 10 cybersecurity tools 2026..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Video type</label>
+            <select id="yt-type" class="input select">
+              <option>YouTube Short (60 seconds)</option>
+              <option>Explainer (5-8 minutes)</option>
+              <option>News breakdown (10-15 minutes)</option>
+              <option>Tutorial / how-to (10-20 minutes)</option>
+              <option>Vlog / personal story (5-10 minutes)</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Target audience</label>
+            <select id="yt-audience" class="input select">
+              <option>Gen Z (18-25)</option>
+              <option>Millennials (25-35)</option>
+              <option>Professionals</option>
+              <option>Ghanaian diaspora</option>
+              <option>Tech enthusiasts</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="generateYouTubeScript()">✨ Write YouTube Script</button>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>Your Script</h3></div>
+        <div id="yt-script-result">
+          <div class="empty-state"><div class="es-icon">▶</div><h3>Script will appear here</h3><p>Includes intro hook, main content sections, and outro CTA.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTAGRAM CAROUSEL -->
+  <div id="st-ig-carousel" style="display:none;">
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd"><h3>📸 Instagram Carousel</h3></div>
+        <div class="form-group"><label class="form-label">Carousel topic</label>
+          <textarea id="ig-topic" class="input textarea" rows="3" placeholder="e.g. 5 things happening in Ghana right now, How AI is changing jobs, 10 cybersecurity tips everyone needs..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Number of slides</label>
+            <select id="ig-slides" class="input select">
+              <option>5 slides</option>
+              <option>7 slides</option>
+              <option>10 slides</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Style</label>
+            <select id="ig-style" class="input select">
+              <option>Tips / listicle</option>
+              <option>News breakdown</option>
+              <option>Before/after story</option>
+              <option>Step by step guide</option>
+              <option>Opinion / hot take</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="generateCarousel()">✨ Write Carousel Slides</button>
+        <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--r-sm);font-size:12px;color:var(--text2);">
+          💡 After generating: Open <a href="https://canva.com" target="_blank" style="color:var(--orange);">Canva</a> → search "Instagram Carousel" → paste each slide text → download. Takes 10 minutes.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>Your Slides</h3></div>
+        <div id="ig-carousel-result">
+          <div class="empty-state"><div class="es-icon">📸</div><h3>Slides will appear here</h3><p>Each slide gets its own headline and body text. Copy into Canva to design.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THUMBNAIL IDEAS -->
+  <div id="st-thumbnail" style="display:none;">
+    <div class="card">
+      <div class="card-hd"><h3>🖼️ YouTube Thumbnail & Title Ideas</h3></div>
+      <div class="form-group"><label class="form-label">Video topic</label>
+        <input id="thumb-topic" class="input" placeholder="e.g. How I make money on TikTok, Ghana vs USA, Cybersecurity explained simply...">
+      </div>
+      <button class="btn btn-primary" onclick="generateThumbnailIdeas()">✨ Generate Thumbnail Concepts + Titles</button>
+      <div id="thumb-result" style="margin-top:14px;display:none;"></div>
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">🎨 Proven thumbnail formulas that get clicks:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="padding:10px;background:var(--bg3);border-radius:var(--r-sm);font-size:12px;border-left:3px solid var(--orange);">
+            <strong>Shocked face + bold text</strong><br><span style="color:var(--text2);">Your reaction face + "YOU WON'T BELIEVE THIS" text. Highest CTR formula.</span>
+          </div>
+          <div style="padding:10px;background:var(--bg3);border-radius:var(--r-sm);font-size:12px;border-left:3px solid var(--blue);">
+            <strong>Before/After split</strong><br><span style="color:var(--text2);">Two images side by side. Works great for transformation and comparison content.</span>
+          </div>
+          <div style="padding:10px;background:var(--bg3);border-radius:var(--r-sm);font-size:12px;border-left:3px solid var(--green);">
+            <strong>Number + promise</strong><br><span style="color:var(--text2);">"5 things nobody tells you about..." Numbers in thumbnails = more clicks.</span>
+          </div>
+          <div style="padding:10px;background:var(--bg3);border-radius:var(--r-sm);font-size:12px;border-left:3px solid var(--purple);">
+            <strong>Arrow pointing at you</strong><br><span style="color:var(--text2);">Point at bold text. Draws eye. Works for opinion and reaction content.</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:12px;background:var(--orange-bg);border:1px solid var(--orange-bg2);border-radius:var(--r-sm);font-size:12px;color:var(--text2);">
+          💡 Make thumbnails free in <a href="https://canva.com/create/youtube-thumbnails/" target="_blank" style="color:var(--orange);">Canva → YouTube Thumbnail template</a>. Takes 5 minutes. Always use bright colors and big text.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGE FINDER -->
+  <div id="st-image-finder" style="display:none;">
+    <div class="card">
+      <div class="card-hd"><h3>🔍 Image Finder — Free Photos for Your Posts</h3></div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <input id="img-search-q" class="input" placeholder="Search for images... e.g. Ghana street, cybersecurity hacker, sports celebration, New York city" style="flex:1;">
+        <button class="btn btn-primary" onclick="searchImages()">Search</button>
+      </div>
+      <div id="img-search-results" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="grid-column:span 3;padding:20px;text-align:center;color:var(--text3);font-size:13px;">Search for any topic above to find free images</div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--r-sm);">
+        <div style="font-size:12px;font-weight:600;margin-bottom:8px;">📌 Best free image sites:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://unsplash.com" target="_blank" class="btn btn-secondary btn-sm">Unsplash</a>
+          <a href="https://www.pexels.com" target="_blank" class="btn btn-secondary btn-sm">Pexels</a>
+          <a href="https://pixabay.com" target="_blank" class="btn btn-secondary btn-sm">Pixabay</a>
+          <a href="https://www.freepik.com" target="_blank" class="btn btn-secondary btn-sm">Freepik</a>
+          <a href="https://giphy.com" target="_blank" class="btn btn-secondary btn-sm">Giphy (GIFs)</a>
+          <a href="https://www.canva.com/photos/" target="_blank" class="btn btn-secondary btn-sm">Canva Photos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
 
 <!-- TOAST CONTAINER -->
@@ -1562,6 +1819,7 @@ function nav(page) {
     if (saved.li) { const el=document.getElementById('g-linkedin'); if(el) el.value=saved.li; }
     setTimeout(() => { updateGrowthDash(); updateGrowthChart(); }, 100);
   }
+  if (page === 'studio') { switchTab('tiktok-script','studio-tabs'); }
   if (page === 'monetize') {
     const saved = JSON.parse(localStorage.getItem('offscript_followers') || '{}');
     if (saved.tt) { const el=document.getElementById('f-tiktok'); if(el) el.value=saved.tt; }
@@ -2312,6 +2570,163 @@ function renderIncomeLog() {
 
 
 
+
+
+// ════════════════════════════════════════════
+// CONTENT STUDIO
+// ════════════════════════════════════════════
+async function generateTikTokScript() {
+  const topic = document.getElementById('tt-topic').value.trim();
+  const length = document.getElementById('tt-length').value;
+  const style = document.getElementById('tt-style').value;
+  const hook = document.getElementById('tt-hook').value;
+  const el = document.getElementById('tt-script-result');
+  const brollEl = document.getElementById('tt-broll');
+  if (!topic) { toast('Enter a topic first', 'error'); return; }
+  showLoading(el);
+  try {
+    const text = await callClaude(`Write a word-for-word TikTok script for @offscript_media about: "${topic}".
+Length: ${length}. Style: ${style}. Hook type: ${hook}.
+Format it as:
+🎬 HOOK (first 3 seconds — make them stop scrolling):
+[hook text]
+
+📢 BODY:
+[main content - word for word what to say]
+
+🔚 OUTRO + CTA:
+[closing line + "Follow @offscript_media for more"]
+
+📱 ON-SCREEN TEXT: [suggest 2-3 text overlays to add in CapCut]
+🎵 AUDIO VIBE: [describe the type of trending sound to search for]
+
+Keep it natural and conversational. Write exactly what Paul should say out loud. No stage directions.`);
+    showResult(el, text);
+    brollEl.style.display = 'block';
+    brollEl.innerHTML = `<div style="padding:12px;background:var(--orange-bg);border:1px solid var(--orange-bg2);border-radius:var(--r-sm);font-size:12px;color:var(--text2);">
+      <strong style="color:var(--orange);">📽️ B-roll to find on Pexels:</strong> Search for visuals related to "${topic.slice(0,30)}" to overlay while you talk. <a href="https://www.pexels.com/search/videos/${encodeURIComponent(topic.split(' ').slice(0,3).join(' '))}/" target="_blank" style="color:var(--orange);">Find B-roll on Pexels →</a>
+    </div>`;
+  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
+}
+
+async function generateYouTubeScript() {
+  const topic = document.getElementById('yt-topic').value.trim();
+  const type = document.getElementById('yt-type').value;
+  const audience = document.getElementById('yt-audience').value;
+  const el = document.getElementById('yt-script-result');
+  if (!topic) { toast('Enter a topic first', 'error'); return; }
+  showLoading(el);
+  try {
+    const text = await callClaude(`Write a complete YouTube video script for @OffScriptMedia about: "${topic}".
+Type: ${type}. Target audience: ${audience}.
+
+Format:
+📌 TITLE OPTIONS (3 clickable title ideas):
+
+🎬 INTRO HOOK (first 30 seconds — must hook them immediately):
+
+📋 CHAPTER BREAKDOWN:
+[list the main sections with timestamps]
+
+📝 FULL SCRIPT:
+[word-for-word script for each section]
+
+🔚 OUTRO + CTA:
+[subscribe, follow @offscript_media on TikTok/Instagram/X, link in description]
+
+🖼️ THUMBNAIL CONCEPT: [describe what the thumbnail should look like]`);
+    showResult(el, text);
+  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
+}
+
+async function generateCarousel() {
+  const topic = document.getElementById('ig-topic').value.trim();
+  const slides = document.getElementById('ig-slides').value;
+  const style = document.getElementById('ig-style').value;
+  const el = document.getElementById('ig-carousel-result');
+  if (!topic) { toast('Enter a topic first', 'error'); return; }
+  showLoading(el);
+  try {
+    const text = await callClaude(`Create an Instagram carousel for @offscript__media about: "${topic}".
+Slides: ${slides}. Style: ${style}.
+
+Format each slide as:
+SLIDE 1 — COVER (hook that makes them swipe):
+Headline: [bold text, max 6 words]
+Subtext: [one line teaser]
+
+SLIDE 2:
+Headline: [...]
+Body: [2-3 lines max — people don't read long slides]
+
+[continue for all slides]
+
+LAST SLIDE — CTA:
+Headline: [call to action]
+Body: Follow @offscript__media for more
+Caption: [full Instagram caption with hashtags to use below the carousel]
+
+Keep each slide SHORT. Big text. Easy to read on phone.`);
+    showResult(el, text);
+  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
+}
+
+async function generateThumbnailIdeas() {
+  const topic = document.getElementById('thumb-topic').value.trim();
+  const el = document.getElementById('thumb-result');
+  if (!topic) { toast('Enter a topic first', 'error'); return; }
+  showLoading(el);
+  el.style.display = 'block';
+  try {
+    const text = await callClaude(`Generate 5 YouTube thumbnail concepts + titles for @OffScriptMedia video about: "${topic}".
+
+For each:
+TITLE: [clickable YouTube title, max 60 chars]
+THUMBNAIL: [describe exactly what to put in the thumbnail — what image, what text overlay, what colors, what expression on face if applicable]
+WHY IT WORKS: [one sentence]
+
+Make them Gen Z-friendly. High contrast. Bold text. Emotional or shocking.`);
+    showResult(el, text);
+  } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
+}
+
+async function searchImages() {
+  const q = document.getElementById('img-search-q').value.trim();
+  const el = document.getElementById('img-search-results');
+  if (!q) { toast('Enter a search term', 'error'); return; }
+  el.innerHTML = '<div style="grid-column:span 3;padding:20px;text-align:center;color:var(--text3);display:flex;align-items:center;justify-content:center;gap:8px;"><div class="spinner"></div> Searching for images...</div>';
+
+  try {
+    const res = await fetch(`https://pixabay.com/api/?key=47467286-e5f9f8f3a8f4e9b2c1d7a8e3f&q=${encodeURIComponent(q)}&image_type=photo&per_page=9&safesearch=true&orientation=horizontal`);
+    const data = await res.json();
+    if (data.hits && data.hits.length) {
+      el.innerHTML = data.hits.slice(0,9).map(img => `
+        <div style="position:relative;border-radius:var(--r-sm);overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border 0.15s;" onmouseover="this.style.border='2px solid var(--orange)'" onmouseout="this.style.border='2px solid transparent'" onclick="copyImageUrl('${img.webformatURL}','${img.largeImageURL}')">
+          <img src="${img.webformatURL}" style="width:100%;height:120px;object-fit:cover;display:block;">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.15s;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(0,0,0,0.5)'" onmouseout="this.style.background='rgba(0,0,0,0)'">
+            <div style="color:#fff;font-size:11px;font-weight:700;opacity:0;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">📋 Copy URL</div>
+          </div>
+        </div>`).join('');
+    } else {
+      el.innerHTML = `<div style="grid-column:span 3;padding:20px;text-align:center;color:var(--text3);font-size:13px;">No images found. Try different keywords or search on <a href="https://unsplash.com/s/photos/${encodeURIComponent(q)}" target="_blank" style="color:var(--orange);">Unsplash</a> or <a href="https://www.pexels.com/search/${encodeURIComponent(q)}/" target="_blank" style="color:var(--orange);">Pexels</a>.</div>`;
+    }
+  } catch(e) {
+    el.innerHTML = `<div style="grid-column:span 3;padding:16px;text-align:center;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px;">Search directly on free image sites:</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <a href="https://unsplash.com/s/photos/${encodeURIComponent(q)}" target="_blank" class="btn btn-primary btn-sm">Unsplash →</a>
+        <a href="https://www.pexels.com/search/${encodeURIComponent(q)}/" target="_blank" class="btn btn-secondary btn-sm">Pexels →</a>
+        <a href="https://pixabay.com/images/search/${encodeURIComponent(q)}/" target="_blank" class="btn btn-secondary btn-sm">Pixabay →</a>
+      </div>
+    </div>`;
+  }
+}
+
+function copyImageUrl(webUrl, largeUrl) {
+  navigator.clipboard.writeText(largeUrl || webUrl).then(() => {
+    toast('Image URL copied! Paste it when uploading to your platform 📸', 'success');
+  });
+}
 
 // ════════════════════════════════════════════
 // CREATOR / STREAMER FEED
