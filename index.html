@@ -768,6 +768,14 @@ input,textarea,select{font-family:inherit;}
         <span style="font-size:15px;font-weight:800;">🎨 Anime Image</span>
         <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Real AI anime art, free — no key</span>
       </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openHashtags('')">
+        <span style="font-size:15px;font-weight:800;"># Hashtags &amp; SEO</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Tags that rank + search keywords</span>
+      </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openLibrary()">
+        <span style="font-size:15px;font-weight:800;">🗂️ Library</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Your saved posts, hooks &amp; images</span>
+      </button>
     </div>
   </div>
 
@@ -2589,7 +2597,8 @@ function showLoading(el) {
 function showResult(el, text, showCopy=true) {
   const formatted = text.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
   el.style.display = 'block';
-  el.innerHTML = `<div class="ai-box"><div class="ai-label">✨ AI Generated</div><p>${formatted}</p>${showCopy?`<button class="ai-copy-btn" onclick="copyText(this,'${btoa(unescape(encodeURIComponent(text)))}')">Copy</button>`:''}</div>`;
+  const b64=btoa(unescape(encodeURIComponent(text)));
+  el.innerHTML = `<div class="ai-box"><div class="ai-label">✨ AI Generated</div><p>${formatted}</p>${showCopy?`<button class="ai-copy-btn" onclick="copyText(this,'${b64}')">Copy</button> <button class="ai-copy-btn" onclick="libAddB64('${b64}','Post')">💾 Save</button>`:''}</div>`;
 }
 
 function copyText(btn, b64) {
@@ -4754,7 +4763,86 @@ function ensureModal(id){
   if(!ov){ ov=document.createElement('div'); ov.id=id; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;'; document.body.appendChild(ov); }
   return ov;
 }
-function copyText(t,msg){ navigator.clipboard.writeText(t).then(()=>toast(msg||'Copied!','success')).catch(()=>toast('Copy failed','error')); }
+function copyStr(t,msg){ navigator.clipboard.writeText(t).then(()=>toast(msg||'Copied!','success')).catch(()=>toast('Copy failed','error')); }
+
+// ════════ SAVED LIBRARY ════════
+function getLib(){ try{ return JSON.parse(localStorage.getItem('offscript_library')||'[]'); }catch(e){ return []; } }
+function saveLib(a){ localStorage.setItem('offscript_library', JSON.stringify(a.slice(0,300))); }
+function libAdd(type,text,extra){
+  const lib=getLib();
+  lib.unshift({id:Date.now()+'_'+Math.random().toString(36).slice(2,6), type:type||'Note', text:text||'', extra:extra||null, date:new Date().toISOString()});
+  saveLib(lib); toast('💾 Saved to Library','success');
+  if(document.getElementById('lib-modal')) renderLibrary();
+}
+function libAddB64(b64,type){ try{ libAdd(type||'Post', decodeURIComponent(escape(atob(b64)))); }catch(e){ toast('Save failed','error'); } }
+function libDelete(id){ saveLib(getLib().filter(x=>x.id!==id)); renderLibrary(); }
+function libClear(){ if(confirm('Clear your whole library?')){ saveLib([]); renderLibrary(); } }
+function openLibrary(){
+  const ov=ensureModal('lib-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(680px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><h3 style="margin:0;font-size:16px;">🗂️ Library — your saved work</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('lib-modal').remove()">✕</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+      <div id="lib-filters" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      <button class="btn btn-ghost btn-xs" style="margin-left:auto;color:var(--red);" onclick="libClear()">Clear all</button>
+    </div>
+    <div id="lib-list"></div>
+  </div>`;
+  renderLibrary();
+}
+let _libFilter='All';
+function renderLibrary(){
+  const list=document.getElementById('lib-list'); if(!list) return;
+  const lib=getLib();
+  const types=['All',...Array.from(new Set(lib.map(x=>x.type)))];
+  const fb=document.getElementById('lib-filters');
+  if(fb) fb.innerHTML=types.map(t=>`<button class="btn btn-xs ${t===_libFilter?'btn-primary':'btn-ghost'}" onclick="_libFilter='${t}';renderLibrary()">${t}${t==='All'?' ('+lib.length+')':''}</button>`).join('');
+  const items=lib.filter(x=>_libFilter==='All'||x.type===_libFilter);
+  if(!items.length){ list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center;">Nothing saved yet. Hit 💾 Save on any post, hook, caption or anime image.</div>'; return; }
+  list.innerHTML=items.map(it=>{
+    const d=new Date(it.date).toLocaleDateString();
+    const safe=(it.text||'').replace(/</g,'&lt;');
+    const isImg=it.type==='Anime'||/^https?:\/\/\S+\.(png|jpg|jpeg|webp)/i.test(it.text)||/image\.pollinations/i.test(it.text);
+    const body=isImg?`<a href="${it.text}" target="_blank"><img src="${it.text}" style="max-width:120px;border-radius:8px;border:1px solid var(--border);"></a>`
+      :`<div style="font-size:12.5px;color:var(--text2);white-space:pre-wrap;line-height:1.5;max-height:140px;overflow:auto;">${safe}</div>`;
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><b style="font-size:12px;color:var(--orange);">${it.type}</b><span style="font-size:11px;color:var(--text3);">${d}</span></div>
+      ${body}
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn btn-primary btn-xs" onclick="copyStr(getLib().find(x=>x.id==='${it.id}').text,'Copied!')">📋 Copy</button>
+        <button class="btn btn-ghost btn-xs" style="color:var(--red);" onclick="libDelete('${it.id}')">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════ HASHTAG / SEO HELPER ════════
+let _tagOut='';
+function openHashtags(topic){
+  const ov=ensureModal('tag-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(620px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;"># Hashtags &amp; SEO</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('tag-modal').remove()">✕</button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Get a smart mix of big + niche hashtags (so you actually rank) plus search keywords for YouTube/TikTok.</div>
+    <label class="form-label">Post topic or paste your caption</label>
+    <textarea id="tag-topic" class="input textarea" rows="3" style="margin-bottom:10px;">${(topic||'').replace(/</g,'&lt;')}</textarea>
+    <button class="btn btn-primary btn-sm" onclick="runHashtags()">✨ Get hashtags + keywords</button>
+    <div id="tag-out" style="margin-top:14px;"></div>
+  </div>`;
+}
+async function runHashtags(){
+  const t=document.getElementById('tag-topic').value.trim();
+  if(!t){ toast('Enter a topic or caption first','error'); return; }
+  const out=document.getElementById('tag-out');
+  out.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);"><span class="spinner"></span> Finding the best tags…</div>';
+  try{
+    _tagOut=await callClaude(`For a social post about: "${t}", give me a strategy mix. Format EXACTLY like this, real hashtags on one line each section, space-separated:\n\nBIG REACH (popular, high volume):\n#tag #tag #tag #tag #tag\n\nMID (niche-popular, your sweet spot):\n#tag #tag #tag #tag #tag #tag #tag #tag\n\nNICHE (low competition, easy to rank):\n#tag #tag #tag #tag #tag #tag #tag\n\nSEARCH KEYWORDS (for YouTube/TikTok captions & titles):\n- keyword one\n- keyword two\n- keyword three\n- keyword four\n- keyword five\n- keyword six`);
+    const safe=_tagOut.replace(/</g,'&lt;');
+    out.innerHTML=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:13px;color:var(--text2);white-space:pre-wrap;line-height:1.6;">${safe}</div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-primary btn-sm" onclick="copyStr(_tagOut,'Hashtags copied!')">📋 Copy all</button>
+        <button class="btn btn-secondary btn-sm" onclick="libAdd('Hashtags',_tagOut)">💾 Save</button>
+      </div>`;
+  }catch(e){ out.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings.</span></div>`; }
+}
 
 // ════════ ANIME IMAGE MAKER (free AI image — no key needed) ════════
 const ANIME_STYLES={
@@ -4783,6 +4871,7 @@ function openAnime(topic){
           <button class="btn btn-primary btn-sm" onclick="renderAnime()">✨ Generate</button>
           <button class="btn btn-secondary btn-sm" onclick="animeVariation()">🎲 New version</button>
           <button class="btn btn-secondary btn-sm" onclick="downloadAnime()">⬇ Download</button>
+          <button class="btn btn-secondary btn-sm" onclick="animeState._url?libAdd('Anime',animeState._url):toast('Generate an image first','error')">💾 Save</button>
         </div>
       </div>
       <div style="flex:1;min-width:240px;">
@@ -4871,7 +4960,7 @@ async function runCrosspost(){
       _xp.push(body);
       html+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><b style="font-size:13px;">${map[seg.key]||seg.key}</b>
-        <button class="btn btn-primary btn-xs" onclick="copyText(_xp[${i}],'${(map[seg.key]||seg.key)} copied!')">📋 Copy</button></div>
+        <div style="display:flex;gap:6px;"><button class="btn btn-primary btn-xs" onclick="copyStr(_xp[${i}],'${(map[seg.key]||seg.key)} copied!')">📋 Copy</button><button class="btn btn-ghost btn-xs" onclick="libAdd('Cross-post',_xp[${i}])">💾</button></div></div>
         <div style="font-size:12.5px;color:var(--text2);white-space:pre-wrap;line-height:1.5;">${body.replace(/</g,'&lt;')}</div>
       </div>`;
     });
@@ -4897,8 +4986,9 @@ async function runHookLab(){
   const out=document.getElementById('hook-out'); out.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);"><span class="spinner"></span> Cooking up hooks…</div>';
   try{
     const text=await callClaude(`Topic: "${t}".\nWrite 5 scroll-stopping opening HOOKS (the first line you'd say/show in the first 2 seconds of a TikTok/Reel). Rank them best to worst for stopping the scroll. For each, one line only. Format strictly:\n1. [hook] — why it works: [3-5 words]\n2. ...\nKeep hooks under 12 words. Bold, curiosity-driven, controversial or shocking. No hashtags.`);
+    window._lastHooks=text;
     out.innerHTML=`<div class="ai-box" style="white-space:pre-wrap;line-height:1.6;font-size:13px;">${text.replace(/</g,'&lt;')}</div>
-      <button class="btn btn-secondary btn-xs" style="margin-top:10px;" onclick="copyText(\`${text.replace(/`/g,'').replace(/\$/g,'')}\`,'Hooks copied!')">📋 Copy all</button>`;
+      <div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-secondary btn-xs" onclick="copyStr(window._lastHooks,'Hooks copied!')">📋 Copy all</button><button class="btn btn-ghost btn-xs" onclick="libAdd('Hooks',window._lastHooks)">💾 Save</button></div>`;
   }catch(e){ out.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings.</span></div>`; }
 }
 
