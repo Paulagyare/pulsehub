@@ -744,6 +744,29 @@ input,textarea,select{font-family:inherit;}
     <div id="pulse-focus-ai" style="display:none;margin-top:12px;"></div>
   </div>
 
+  <!-- CREATOR POWER TOOLS -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-hd"><h3>⚡ Power tools</h3><span style="font-size:11px;color:var(--text3);">grow faster · get paid</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openHookLab('')">
+        <span style="font-size:15px;font-weight:800;">🪝 Hook Lab</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">5 scroll-stopping hooks, ranked</span>
+      </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openCrosspost('')">
+        <span style="font-size:15px;font-weight:800;">🔁 Cross-poster</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">1 topic → all 4 platforms</span>
+      </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openMediaKit()">
+        <span style="font-size:15px;font-weight:800;">📄 Media Kit</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Pitch brands &amp; clients to get paid</span>
+      </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openGrowth()">
+        <span style="font-size:15px;font-weight:800;">📈 Growth Tracker</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Log weekly, watch the curve climb</span>
+      </button>
+    </div>
+  </div>
+
   <!-- TRENDING NOW -->
   <div class="card" style="margin-bottom:16px;">
     <div class="card-hd">
@@ -3633,6 +3656,8 @@ Caption: [full Instagram caption with hashtags to use below the carousel]
 
 Keep each slide SHORT. Big text. Easy to read on phone.`);
     showResult(el, text);
+    window._lastCarousel = text;
+    el.insertAdjacentHTML('beforeend', `<button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="buildCarouselSlides(window._lastCarousel)">🖼️ Turn into slide images</button>`);
   } catch(e) { el.innerHTML = `<div class="ai-box"><span style="color:var(--red);">${e.message}</span></div>`; el.style.display='block'; }
 }
 
@@ -4437,6 +4462,7 @@ async function renderPulseTrending(force){
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px;">
         <button class="btn btn-primary btn-xs" onclick="genFromNews('${safe}')">✨ Post</button>
         <button class="btn btn-secondary btn-xs" onclick="openGraphic('${safe}','${item.cat||''}')">🖼️ Graphic</button>
+        <button class="btn btn-secondary btn-xs" onclick="openCrosspost('${safe}')">🔁 All platforms</button>
         <button class="btn btn-secondary btn-xs" onclick="videoFromTrend('${safe}')">🎬 Video</button>
       </div>
     </div>`;
@@ -4715,6 +4741,267 @@ function copyGraphic(){
   const cv=document.getElementById('gfx-canvas'); if(!cv)return;
   cv.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Image copied to clipboard!','success'); }
     catch(e){ toast('Copy not supported here — use Download instead','error'); } },'image/png');
+}
+
+// ════════ SHARED MODAL HELPER ════════
+function ensureModal(id){
+  let ov=document.getElementById(id);
+  if(!ov){ ov=document.createElement('div'); ov.id=id; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;'; document.body.appendChild(ov); }
+  return ov;
+}
+function copyText(t,msg){ navigator.clipboard.writeText(t).then(()=>toast(msg||'Copied!','success')).catch(()=>toast('Copy failed','error')); }
+
+// ════════ 1. CROSS-POSTER ════════
+let _xp=[];
+function openCrosspost(topic){
+  const ov=ensureModal('xp-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(640px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;">🔁 Cross-poster — one topic, every platform</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('xp-modal').remove()">✕</button></div>
+    <label class="form-label">Topic or trend</label>
+    <textarea id="xp-topic" class="input textarea" rows="2" style="margin-bottom:10px;">${(topic||'').replace(/</g,'&lt;')}</textarea>
+    <button class="btn btn-primary btn-sm" onclick="runCrosspost()">✨ Generate all 4 platforms</button>
+    <div id="xp-out" style="margin-top:14px;"></div>
+  </div>`;
+  if(topic) runCrosspost();
+}
+async function runCrosspost(){
+  const t=document.getElementById('xp-topic').value.trim();
+  if(!t){ toast('Enter a topic first','error'); return; }
+  const out=document.getElementById('xp-out');
+  out.innerHTML='<div style="padding:18px;text-align:center;color:var(--text3);"><span class="spinner"></span> Writing for all 4 platforms…</div>';
+  try{
+    const text=await callClaude(`Trending topic: "${t}".\nWrite 4 platform-native posts for this topic. Each tuned to how that platform actually works. Use EXACTLY these delimiters and nothing before the first one:\n===TIKTOK===\n(a punchy on-screen hook line, then a short caption + 3-5 hashtags)\n===REEL===\n(Instagram Reel caption with a strong first line + hashtags)\n===X===\n(a bold tweet under 280 chars, no hashtags spam)\n===YOUTUBE===\n(a clickable Shorts title + 1-line description)`);
+    const map={TIKTOK:'🎵 TikTok',REEL:'📸 Instagram Reel',X:'𝕏 Twitter/X',YOUTUBE:'▶️ YouTube Short'};
+    _xp=[];
+    const re=/===\s*(TIKTOK|REEL|X|YOUTUBE)\s*===/gi; let m, idxs=[];
+    while((m=re.exec(text))!==null){ idxs.push({key:m[1].toUpperCase(),start:m.index+m[0].length}); }
+    let html='';
+    idxs.forEach((seg,i)=>{
+      const end=i<idxs.length-1?idxs[i+1].start-(`===${idxs[i+1].key}===`).length-6:text.length;
+      let body=text.slice(seg.start, i<idxs.length-1?text.indexOf('===',seg.start):text.length).replace(/===\s*\w+\s*===\s*$/,'').trim();
+      _xp.push(body);
+      html+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><b style="font-size:13px;">${map[seg.key]||seg.key}</b>
+        <button class="btn btn-primary btn-xs" onclick="copyText(_xp[${i}],'${(map[seg.key]||seg.key)} copied!')">📋 Copy</button></div>
+        <div style="font-size:12.5px;color:var(--text2);white-space:pre-wrap;line-height:1.5;">${body.replace(/</g,'&lt;')}</div>
+      </div>`;
+    });
+    out.innerHTML=html||'<div style="color:var(--text3);font-size:13px;">Could not parse — try again.</div>';
+  }catch(e){ out.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings.</span></div>`; }
+}
+
+// ════════ 2. HOOK LAB ════════
+function openHookLab(topic){
+  const ov=ensureModal('hook-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(560px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;">🪝 Hook Lab</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('hook-modal').remove()">✕</button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Your first 2 seconds decide your views. Get 5 hooks, ranked best to worst.</div>
+    <label class="form-label">What's the post about?</label>
+    <textarea id="hook-topic" class="input textarea" rows="2" style="margin-bottom:10px;">${(topic||'').replace(/</g,'&lt;')}</textarea>
+    <button class="btn btn-primary btn-sm" onclick="runHookLab()">✨ Generate hooks</button>
+    <div id="hook-out" style="margin-top:14px;"></div>
+  </div>`;
+}
+async function runHookLab(){
+  const t=document.getElementById('hook-topic').value.trim();
+  if(!t){ toast('Enter a topic first','error'); return; }
+  const out=document.getElementById('hook-out'); out.innerHTML='<div style="padding:16px;text-align:center;color:var(--text3);"><span class="spinner"></span> Cooking up hooks…</div>';
+  try{
+    const text=await callClaude(`Topic: "${t}".\nWrite 5 scroll-stopping opening HOOKS (the first line you'd say/show in the first 2 seconds of a TikTok/Reel). Rank them best to worst for stopping the scroll. For each, one line only. Format strictly:\n1. [hook] — why it works: [3-5 words]\n2. ...\nKeep hooks under 12 words. Bold, curiosity-driven, controversial or shocking. No hashtags.`);
+    out.innerHTML=`<div class="ai-box" style="white-space:pre-wrap;line-height:1.6;font-size:13px;">${text.replace(/</g,'&lt;')}</div>
+      <button class="btn btn-secondary btn-xs" style="margin-top:10px;" onclick="copyText(\`${text.replace(/`/g,'').replace(/\$/g,'')}\`,'Hooks copied!')">📋 Copy all</button>`;
+  }catch(e){ out.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings.</span></div>`; }
+}
+
+// ════════ 3. MEDIA KIT ════════
+function openMediaKit(){
+  const s=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+  const p=JSON.parse(localStorage.getItem('offscript_profile')||'{}');
+  const ov=ensureModal('mk-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(820px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;">📄 Media Kit — your pitch to brands &amp; clients</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('mk-modal').remove()">✕</button></div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;">
+      <div style="flex:0 0 auto;text-align:center;"><canvas id="mk-canvas" style="width:280px;height:auto;border-radius:10px;border:1px solid var(--border);background:#000;"></canvas>
+        <div style="margin-top:10px;"><button class="btn btn-primary btn-sm" onclick="downloadMediaKit()">⬇ Download media kit</button></div></div>
+      <div style="flex:1;min-width:240px;">
+        <label class="form-label">Niche / tagline</label>
+        <input id="mk-niche" class="input" value="${(p.niche||'Bold news &amp; viral takes, worldwide')}" oninput="renderMediaKit()" style="margin-bottom:10px;">
+        <label class="form-label">Contact</label>
+        <input id="mk-contact" class="input" value="${(p.email||'agy21003@byui.edu')}" oninput="renderMediaKit()" style="margin-bottom:10px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">Numbers pull from your Pulse "Update my numbers". Update them there for an accurate kit.</div>
+        <div style="font-size:12px;color:var(--text2);">TikTok ${fmtN(s.tt_f||0)} · IG ${fmtN(s.ig_f||0)} · YT ${fmtN(s.yt_f||0)} · X ${fmtN(s.tw_f||0)}</div>
+      </div>
+    </div>
+  </div>`;
+  renderMediaKit();
+}
+function renderMediaKit(){
+  const cv=document.getElementById('mk-canvas'); if(!cv)return;
+  const s=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+  const {brand,handle}=gfxHandle();
+  const niche=(document.getElementById('mk-niche')||{}).value||'';
+  const contact=(document.getElementById('mk-contact')||{}).value||'';
+  const W=1080,H=1350,PAD=70; cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#13161C'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#FF7A00'; ctx.fillRect(0,0,W,14);
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  // header
+  ctx.fillStyle='#F5F6F8'; ctx.font='800 64px Arial'; ctx.fillText(brand,PAD,130);
+  ctx.fillStyle='#FF7A00'; ctx.font='700 32px Arial'; ctx.fillText(handle+'  ·  MEDIA KIT',PAD,178);
+  ctx.fillStyle='#969EAA'; ctx.font='400 30px Arial'; ctx.fillText(niche.slice(0,52),PAD,224);
+  ctx.strokeStyle='#262B35'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(PAD,258); ctx.lineTo(W-PAD,258); ctx.stroke();
+  // totals
+  const totF=(s.tt_f||0)+(s.ig_f||0)+(s.yt_f||0)+(s.tw_f||0);
+  const totV=(s.tt_v||0)+(s.ig_v||0)+(s.yt_v||0)+(s.tw_v||0);
+  function bigStat(x,label,val){ ctx.fillStyle='#FF7A00'; ctx.font='800 76px Arial'; ctx.fillText(val,x,360);
+    ctx.fillStyle='#969EAA'; ctx.font='700 26px Arial'; ctx.fillText(label,x,398); }
+  bigStat(PAD,'TOTAL FOLLOWERS',fmtN(totF));
+  bigStat(W/2+20,'MONTHLY VIEWS',fmtN(totV));
+  // per-platform
+  let y=470; const plats=[['🎵 TikTok',s.tt_f,s.tt_v],['📸 Instagram',s.ig_f,s.ig_v],['▶️ YouTube',s.yt_f,s.yt_v],['𝕏 Twitter/X',s.tw_f,s.tw_v]];
+  ctx.font='700 30px Arial'; ctx.fillStyle='#F5F6F8'; ctx.fillText('PLATFORMS',PAD,y); y+=20;
+  plats.forEach(p=>{ y+=64; ctx.fillStyle='#1A1E26'; roundRect(ctx,PAD,y-44,W-2*PAD,56,12); ctx.fill();
+    ctx.fillStyle='#F5F6F8'; ctx.font='600 30px Arial'; ctx.fillText(p[0],PAD+20,y-6);
+    ctx.fillStyle='#FF7A00'; ctx.font='700 30px Arial'; ctx.textAlign='right'; ctx.fillText(fmtN(p[1]||0)+' followers',W-PAD-20,y-6); ctx.textAlign='left'; });
+  // services
+  y+=70; ctx.fillStyle='#F5F6F8'; ctx.font='700 30px Arial'; ctx.fillText('WORK WITH ME',PAD,y);
+  const svcs=['Sponsored posts & brand integrations','Managed social for your business (12+ posts/mo)','Reels, Shorts & viral news edits','Shoutouts & product features'];
+  ctx.font='400 28px Arial';
+  svcs.forEach(sv=>{ y+=46; ctx.fillStyle='#FF7A00'; ctx.fillText('▸',PAD,y); ctx.fillStyle='#C7CCD6'; ctx.fillText(sv,PAD+36,y); });
+  // contact bar
+  ctx.fillStyle='#FF7A00'; roundRect(ctx,PAD,H-150,W-2*PAD,90,18); ctx.fill();
+  ctx.fillStyle='#0A0C10'; ctx.font='800 30px Arial'; ctx.fillText('LET’S WORK:',PAD+30,H-95);
+  ctx.font='700 30px Arial'; ctx.fillText(contact.slice(0,40),PAD+250,H-95);
+}
+function downloadMediaKit(){ const cv=document.getElementById('mk-canvas'); if(!cv)return;
+  cv.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='offscript_media_kit.png'; a.click(); URL.revokeObjectURL(u); toast('Media kit downloaded — send it to brands!','success'); },'image/png'); }
+
+// ════════ 4. GROWTH TRACKER ════════
+function growthKey(){ return 'growth_log'; }
+function getGrowth(){ return JSON.parse(localStorage.getItem(growthKey())||'[]'); }
+function openGrowth(){
+  const s=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+  const totF=(s.tt_f||0)+(s.ig_f||0)+(s.yt_f||0)+(s.tw_f||0);
+  const ov=ensureModal('gr-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(640px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;">📈 Growth Tracker</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('gr-modal').remove()">✕</button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Log your total followers once a week. The climbing curve is your #1 proof when pitching clients.</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:14px;">
+      <div><label class="form-label">Total followers today</label><input id="gr-val" class="input" type="number" min="0" value="${totF}" style="width:160px;"></div>
+      <button class="btn btn-primary btn-sm" onclick="logGrowth()">＋ Log today</button>
+    </div>
+    <canvas id="gr-canvas" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border);background:var(--bg3);"></canvas>
+    <div id="gr-table" style="margin-top:12px;"></div>
+  </div>`;
+  renderGrowth();
+}
+function logGrowth(){
+  const v=parseInt(document.getElementById('gr-val').value,10);
+  if(isNaN(v)||v<0){ toast('Enter a number','error'); return; }
+  const log=getGrowth(); const today=new Date().toISOString().slice(0,10);
+  const ex=log.find(x=>x.date===today); if(ex) ex.v=v; else log.push({date:today,v});
+  log.sort((a,b)=>a.date<b.date?-1:1);
+  localStorage.setItem(growthKey(),JSON.stringify(log));
+  toast('Logged!','success'); renderGrowth();
+}
+function renderGrowth(){
+  const log=getGrowth(); const cv=document.getElementById('gr-canvas'); if(!cv)return;
+  const W=1000,H=420,PAD=60; cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
+  ctx.fillStyle='#1A1E26'; ctx.fillRect(0,0,W,H);
+  if(log.length<2){ ctx.fillStyle='#969EAA'; ctx.font='28px Arial'; ctx.textAlign='center';
+    ctx.fillText(log.length===1?'1 entry — log again next week to see the line':'No data yet — log your first number',W/2,H/2); ctx.textAlign='left';
+    document.getElementById('gr-table').innerHTML=growthTable(log); return; }
+  const vals=log.map(x=>x.v); const mx=Math.max(...vals), mn=Math.min(...vals); const rng=(mx-mn)||1;
+  // axes
+  ctx.strokeStyle='#2A303B'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){ const yy=PAD+(H-2*PAD)*i/4; ctx.beginPath(); ctx.moveTo(PAD,yy); ctx.lineTo(W-20,yy); ctx.stroke();
+    ctx.fillStyle='#6B7280'; ctx.font='20px Arial'; ctx.fillText(fmtN(Math.round(mx-(rng)*i/4)),6,yy+6); }
+  // line
+  const pts=log.map((x,i)=>[PAD+(W-PAD-20)*(log.length>1?i/(log.length-1):0),PAD+(H-2*PAD)*(1-(x.v-mn)/rng)]);
+  ctx.strokeStyle='#FF7A00'; ctx.lineWidth=4; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+  // area
+  ctx.lineTo(pts[pts.length-1][0],H-PAD); ctx.lineTo(pts[0][0],H-PAD); ctx.closePath(); ctx.fillStyle='rgba(255,122,0,0.12)'; ctx.fill();
+  ctx.fillStyle='#FF7A00'; pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p[0],p[1],6,0,7); ctx.fill(); });
+  const gain=vals[vals.length-1]-vals[0];
+  document.getElementById('gr-table').innerHTML=`<div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:8px;">${gain>=0?'▲ +'+fmtN(gain):'▼ '+fmtN(gain)} followers since you started tracking</div>`+growthTable(log);
+}
+function growthTable(log){
+  if(!log.length) return '';
+  return '<div style="display:flex;flex-wrap:wrap;gap:6px;">'+log.slice(-8).reverse().map(x=>`<span style="font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:3px 10px;">${x.date.slice(5)} · ${fmtN(x.v)}</span>`).join('')+'</div>';
+}
+
+// ════════ 5. CAROUSEL → SLIDE IMAGES ════════
+let _carSlides=[], _carIdx=0;
+function parseCarousel(text){
+  const chunks=text.split(/\n(?=\s*(?:SLIDE\b|LAST SLIDE\b))/i); const slides=[];
+  chunks.forEach(ch=>{
+    if(!/SLIDE/i.test((ch.split('\n')[0]||''))) return;
+    const head=((ch.match(/Headline:\s*(.+)/i)||[])[1]||'').trim();
+    const sub=((ch.match(/Subtext:\s*(.+)/i)||[])[1]||'').trim();
+    let body=((ch.match(/Body:\s*([\s\S]*?)(?:\nCaption:|\nHeadline:|$)/i)||[])[1]||'').trim();
+    if(head||sub||body) slides.push({head,sub,body,isCover:/COVER/i.test(ch),isCta:/CTA|LAST SLIDE/i.test(ch)});
+  });
+  return slides;
+}
+function buildCarouselSlides(text){
+  _carSlides=parseCarousel(text||''); _carIdx=0;
+  if(!_carSlides.length){ toast('Could not read slides — regenerate the carousel','error'); return; }
+  const ov=ensureModal('car-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(520px,96vw);max-height:94vh;overflow:auto;text-align:center;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:16px;">🖼️ Carousel slides (${_carSlides.length})</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('car-modal').remove()">✕</button></div>
+    <canvas id="car-canvas" style="width:260px;height:auto;border-radius:10px;border:1px solid var(--border);background:#000;"></canvas>
+    <div style="margin:12px 0;display:flex;gap:8px;justify-content:center;align-items:center;">
+      <button class="btn btn-ghost btn-sm" onclick="carNav(-1)">‹ Prev</button>
+      <span id="car-count" style="font-size:12px;color:var(--text3);"></span>
+      <button class="btn btn-ghost btn-sm" onclick="carNav(1)">Next ›</button>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button class="btn btn-primary btn-sm" onclick="downloadCarSlide()">⬇ This slide</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadAllCar()">⬇ All slides</button>
+    </div>
+  </div>`;
+  renderCarSlide();
+}
+function carNav(d){ _carIdx=(_carIdx+d+_carSlides.length)%_carSlides.length; renderCarSlide(); }
+function drawCarSlide(ctx,slide,i,total){
+  const W=1080,H=1350,PAD=80; ctx.fillStyle='#13161C'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#FF7A00'; ctx.fillRect(0,0,12,H);
+  const {handle}=gfxHandle();
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#6B7280'; ctx.font='700 26px Arial'; ctx.fillText(handle,PAD,80);
+  ctx.textAlign='right'; ctx.fillStyle='#FF7A00'; ctx.fillText((i+1)+' / '+total,W-PAD,80); ctx.textAlign='left';
+  const head=slide.head||(slide.isCover?'':''); const body=slide.body||slide.sub||'';
+  // headline
+  ctx.fillStyle='#F5F6F8'; const hSize=slide.isCover?96:74; ctx.font='800 '+hSize+'px Arial';
+  const hLines=gfxWrap(ctx,head,W-2*PAD); const hLH=hSize+12;
+  // body
+  ctx.font='400 40px Arial'; const bLines=body?gfxWrap(ctx,body,W-2*PAD):[]; const bLH=56;
+  const blockH=hLines.length*hLH+(bLines.length?40+bLines.length*bLH:0);
+  let y=(H-blockH)/2; if(y<200)y=200;
+  ctx.fillStyle='#F5F6F8'; ctx.font='800 '+hSize+'px Arial';
+  hLines.forEach(ln=>{ ctx.fillText(ln,PAD,y+hSize*0.8); y+=hLH; });
+  if(bLines.length){ y+=40; ctx.fillStyle='#C7CCD6'; ctx.font='400 40px Arial'; bLines.forEach(ln=>{ ctx.fillText(ln,PAD,y+32); y+=bLH; }); }
+  // footer cue
+  ctx.font='700 34px Arial'; ctx.fillStyle='#FF7A00';
+  if(slide.isCover) ctx.fillText('Swipe →',PAD,H-90);
+  else if(slide.isCta||i===total-1) ctx.fillText('Follow '+handle+' for more',PAD,H-90);
+  else ctx.fillText('Swipe →',W-PAD-ctx.measureText('Swipe →').width,H-90);
+}
+function renderCarSlide(){
+  const cv=document.getElementById('car-canvas'); if(!cv)return; cv.width=1080; cv.height=1350;
+  drawCarSlide(cv.getContext('2d'),_carSlides[_carIdx],_carIdx,_carSlides.length);
+  const c=document.getElementById('car-count'); if(c) c.textContent='Slide '+(_carIdx+1)+' of '+_carSlides.length;
+}
+function downloadCarSlide(){ const cv=document.getElementById('car-canvas'); if(!cv)return;
+  cv.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='carousel_slide_'+(_carIdx+1)+'.png'; a.click(); URL.revokeObjectURL(u); },'image/png'); }
+async function downloadAllCar(){
+  const tmp=document.createElement('canvas'); tmp.width=1080; tmp.height=1350; const ctx=tmp.getContext('2d');
+  for(let i=0;i<_carSlides.length;i++){
+    drawCarSlide(ctx,_carSlides[i],i,_carSlides.length);
+    await new Promise(res=>tmp.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='carousel_slide_'+(i+1)+'.png'; a.click(); URL.revokeObjectURL(u); setTimeout(res,350); },'image/png'));
+  }
+  toast('All '+_carSlides.length+' slides downloaded!','success');
 }
 
 
