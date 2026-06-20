@@ -4436,6 +4436,7 @@ async function renderPulseTrending(force){
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px;">
         <button class="btn btn-primary btn-xs" onclick="genFromNews('${safe}')">✨ Post</button>
+        <button class="btn btn-secondary btn-xs" onclick="openGraphic('${safe}','${item.cat||''}')">🖼️ Graphic</button>
         <button class="btn btn-secondary btn-xs" onclick="videoFromTrend('${safe}')">🎬 Video</button>
       </div>
     </div>`;
@@ -4594,6 +4595,127 @@ function renderPersonal(){
     `<button class="btn btn-ghost btn-xs" onclick="clearPostLog()" style="margin-top:4px;">Clear log</button>`;
 }
 function clearPostLog(){ if(confirm('Clear all your logged posts?')){ localStorage.removeItem(btLogKey()); renderPersonal(); } }
+
+// ════════ POST GRAPHIC MAKER (client-side, no API) ════════
+const GFX_STYLES={
+  dark:{name:'OffScript Dark',bg:'#13161C',panel:'#1A1E26',head:'#F5F6F8',sub:'#969EAA',accent:'#FF7A00',ctaText:'#0A0C10',pill:'#FF7A00',pillText:'#0A0C10',edge:'#FF7A00'},
+  red:{name:'Breaking Red',bg:'#1A0E0E',panel:'#2A1414',head:'#FFFFFF',sub:'#D9A3A3',accent:'#E63946',ctaText:'#FFFFFF',pill:'#E63946',pillText:'#FFFFFF',edge:'#E63946',pillLabel:'BREAKING'},
+  light:{name:'Clean Light',bg:'#F4F4F1',panel:'#E8E8E2',head:'#16181D',sub:'#6B7280',accent:'#FF7A00',ctaText:'#0A0C10',pill:'#16181D',pillText:'#FFFFFF',edge:'#FF7A00'}
+};
+const GFX_SIZES={feed:{w:1080,h:1350,label:'Feed 4:5'},story:{w:1080,h:1920,label:'Story / Reel 9:16'}};
+const CAT_EMOJI={tech:'💻',politics:'🏛️',sports:'⚽',celebrity:'⭐',music:'🎵',world:'🌍',viral:'🔥',business:'📈',entertainment:'🎬',cyber:'🛡️',ai:'🤖'};
+let gfxState={headline:'',sub:'',cat:'',style:'dark',size:'feed'};
+
+function openGraphic(title,cat){
+  gfxState={headline:title||'Your headline here',sub:'',cat:(cat||'').toLowerCase(),style:'dark',size:'feed'};
+  let ov=document.getElementById('gfx-modal');
+  if(!ov){ ov=document.createElement('div'); ov.id='gfx-modal'; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;'; document.body.appendChild(ov); }
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(820px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:16px;">🖼️ Make a post graphic</h3>
+      <button class="btn btn-ghost btn-xs" onclick="document.getElementById('gfx-modal').remove()">✕</button>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;">
+      <div style="flex:0 0 auto;text-align:center;">
+        <canvas id="gfx-canvas" style="width:260px;height:auto;border-radius:10px;border:1px solid var(--border);background:#000;"></canvas>
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center;">
+          <button class="btn btn-primary btn-sm" onclick="downloadGraphic()">⬇ Download PNG</button>
+          <button class="btn btn-secondary btn-sm" onclick="copyGraphic()">📋 Copy</button>
+        </div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <label class="form-label">Headline</label>
+        <textarea id="gfx-head" class="input textarea" rows="3" oninput="gfxState.headline=this.value;renderGraphic()" style="margin-bottom:10px;">${(gfxState.headline||'').replace(/</g,'&lt;')}</textarea>
+        <label class="form-label">Sub-text (optional)</label>
+        <input id="gfx-sub" class="input" oninput="gfxState.sub=this.value;renderGraphic()" placeholder="One supporting line…" style="margin-bottom:12px;">
+        <label class="form-label">Style</label>
+        <div id="gfx-styles" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          ${Object.keys(GFX_STYLES).map(k=>`<button class="btn btn-xs ${k==='dark'?'btn-primary':'btn-ghost'}" data-st="${k}" onclick="setGfxStyle('${k}')">${GFX_STYLES[k].name}</button>`).join('')}
+        </div>
+        <label class="form-label">Size</label>
+        <div id="gfx-sizes" style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${Object.keys(GFX_SIZES).map(k=>`<button class="btn btn-xs ${k==='feed'?'btn-primary':'btn-ghost'}" data-sz="${k}" onclick="setGfxSize('${k}')">${GFX_SIZES[k].label}</button>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:12px;">Downloads a ready-to-post image. Pair it with your caption and post. Brand handle pulls from Settings.</div>
+      </div>
+    </div>
+  </div>`;
+  renderGraphic();
+}
+function setGfxStyle(k){ gfxState.style=k; document.querySelectorAll('#gfx-styles button').forEach(b=>b.className='btn btn-xs '+(b.dataset.st===k?'btn-primary':'btn-ghost')); renderGraphic(); }
+function setGfxSize(k){ gfxState.size=k; document.querySelectorAll('#gfx-sizes button').forEach(b=>b.className='btn btn-xs '+(b.dataset.sz===k?'btn-primary':'btn-ghost')); renderGraphic(); }
+function gfxHandle(){
+  const p=JSON.parse(localStorage.getItem('offscript_profile')||'{}');
+  return {brand:(p.brand||'OFFSCRIPT MEDIA').toUpperCase(), handle:p.handle||'@offscript'};
+}
+function gfxWrap(ctx,text,maxw){
+  const words=(text||'').split(/\s+/); const lines=[]; let cur='';
+  for(const w of words){ const t=(cur+' '+w).trim(); if(ctx.measureText(t).width<=maxw) cur=t; else { if(cur)lines.push(cur); cur=w; } }
+  if(cur) lines.push(cur); return lines.length?lines:[''];
+}
+function renderGraphic(){
+  const cv=document.getElementById('gfx-canvas'); if(!cv) return;
+  const sz=GFX_SIZES[gfxState.size], st=GFX_STYLES[gfxState.style];
+  cv.width=sz.w; cv.height=sz.h;
+  const ctx=cv.getContext('2d'); const W=sz.w,H=sz.h,PAD=70;
+  // bg
+  ctx.fillStyle=st.bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=st.panel; ctx.fillRect(0,0,W,150);
+  ctx.fillStyle=st.edge; ctx.fillRect(0,0,12,H);
+  const {brand,handle}=gfxHandle();
+  // header
+  ctx.fillStyle=st.accent; ctx.beginPath(); ctx.arc(PAD+17,75,17,0,7); ctx.fill();
+  ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+  ctx.fillStyle=st.head; ctx.font='700 30px Arial,sans-serif'; ctx.fillText(brand,PAD+48,82);
+  ctx.fillStyle=st.sub; ctx.font='400 26px Arial,sans-serif'; ctx.fillText(handle,PAD+48,118);
+  // category pill
+  const pill=(st.pillLabel||CAT_LABEL(gfxState.cat)||'NEWS');
+  ctx.font='700 26px Arial,sans-serif'; const pw=ctx.measureText(pill).width;
+  ctx.fillStyle=st.pill; roundRect(ctx,W-PAD-pw-40,60,pw+40,46,18); ctx.fill();
+  ctx.fillStyle=st.pillText; ctx.fillText(pill,W-PAD-pw-20,92);
+  // layout middle block centered between header(160) and cta
+  const ctaH=120, ctaTop=H-ctaH-70;
+  const emoji=CAT_EMOJI[gfxState.cat]||'📰';
+  const badge=190, gap1=46, gap2=22;
+  ctx.font='700 86px Arial,sans-serif';
+  const hLines=gfxWrap(ctx,gfxState.headline,W-2*PAD); const hLH=98;
+  ctx.font='400 38px Arial,sans-serif';
+  const sLines=gfxState.sub?gfxWrap(ctx,gfxState.sub,W-2*PAD):[]; const sLH=50;
+  const blockH=badge+gap1+hLines.length*hLH+(sLines.length?gap2+sLines.length*sLH:0);
+  let y=160+((ctaTop-160)-blockH)/2; if(y<180)y=180;
+  // emoji badge
+  const bx=W/2;
+  ctx.fillStyle=st.panel; roundRect(ctx,bx-badge/2,y,badge,badge,40); ctx.fill();
+  ctx.textAlign='center'; ctx.font='100px Arial,sans-serif'; ctx.fillText(emoji,bx,y+badge*0.72);
+  ctx.textAlign='left';
+  y+=badge+gap1;
+  // headline
+  ctx.fillStyle=st.head; ctx.font='700 86px Arial,sans-serif';
+  for(const ln of hLines){ ctx.fillText(ln,PAD,y+74); y+=hLH; }
+  // sub
+  if(sLines.length){ y+=gap2; ctx.fillStyle=st.sub; ctx.font='400 38px Arial,sans-serif';
+    for(const ln of sLines){ ctx.fillText(ln,PAD,y+30); y+=sLH; } }
+  // CTA bar
+  ctx.fillStyle=st.accent; roundRect(ctx,PAD,ctaTop,W-2*PAD,ctaH,24); ctx.fill();
+  ctx.fillStyle=st.ctaText; ctx.font='700 44px Arial,sans-serif'; ctx.fillText('DROP YOUR TAKE',PAD+40,ctaTop+58);
+  ctx.font='700 26px Arial,sans-serif'; ctx.fillText('Comment your verdict below',PAD+40,ctaTop+96);
+  // arrow
+  const aw=ctx.measureText('Comment your verdict below').width; const ax=PAD+40+aw+22, ay=ctaTop+76;
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(ax+34,ay); ctx.lineTo(ax+17,ay+26); ctx.closePath(); ctx.fillStyle=st.ctaText; ctx.fill();
+}
+function CAT_LABEL(c){ if(!c)return ''; return c.toUpperCase(); }
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function downloadGraphic(){
+  const cv=document.getElementById('gfx-canvas'); if(!cv)return;
+  cv.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a');
+    a.href=u; a.download='offscript_post_'+Date.now()+'.png'; a.click(); URL.revokeObjectURL(u);
+    toast('Graphic downloaded — ready to post!','success'); },'image/png');
+}
+function copyGraphic(){
+  const cv=document.getElementById('gfx-canvas'); if(!cv)return;
+  cv.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Image copied to clipboard!','success'); }
+    catch(e){ toast('Copy not supported here — use Download instead','error'); } },'image/png');
+}
 
 
 </script>
