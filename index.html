@@ -337,6 +337,11 @@ input,textarea,select{font-family:inherit;}
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
         Dashboard
       </button>
+      <button class="nav-item" onclick="nav('pulse')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 8h3l2-5 3 10 2-5h4"/></svg>
+        Pulse — Today
+        <span class="nav-badge" style="background:var(--green);">LIVE</span>
+      </button>
       <button class="nav-item" onclick="nav('news')">
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1zm0 2v2h5V5H2zm7 0v2h5V5H9zM2 9v2h12V9H2z"/></svg>
         News & Trends
@@ -350,6 +355,11 @@ input,textarea,select{font-family:inherit;}
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="5"/><path d="M6 6l5 2-5 2V6z"/></svg>
         Content Studio
         <span class="nav-badge" style="background:var(--purple);">NEW</span>
+      </button>
+      <button class="nav-item" onclick="nav('radar')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1"/></svg>
+        Creator Radar
+        <span class="nav-badge" style="background:var(--orange);">NEW</span>
       </button>
       <button class="nav-item" onclick="nav('schedule')">
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="11" rx="1"/><path d="M5 1v4M11 1v4M1 7h14"/></svg>
@@ -644,6 +654,11 @@ input,textarea,select{font-family:inherit;}
     <button class="btn btn-ghost btn-sm" onclick="filterNews('us',this)">🇺🇸 US</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('ghana',this)">🇬🇭 Ghana</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('global',this)">🌐 Global</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('world',this)">🌍 World</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('viral',this)">🔥 Viral</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('politics',this)">🏛️ Politics</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('celebrity',this)">⭐ Celebrity</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterNews('music',this)">🎵 Music</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('tech',this)">💻 Tech</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('entertainment',this)">🎬 Entertainment</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('sports',this)">⚽ Sports</button>
@@ -694,6 +709,210 @@ input,textarea,select{font-family:inherit;}
         <div class="spinner"></div> Loading top creators...
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE: PULSE — TODAY (growth command center)
+══════════════════════════════════════════════ -->
+<div class="page" id="page-pulse">
+  <div class="page-hd"><h1>🎯 Pulse — Today</h1><p>Your daily command center. What's blowing up right now, and exactly what to post to gain followers, views & comments.</p></div>
+
+  <!-- TOPIC MODE TOGGLE -->
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;">
+    <div style="font-size:12px;color:var(--text2);"><b style="color:var(--text);">Coverage mode</b> — controls what topics the AI will write about across the app.</div>
+    <div style="display:flex;gap:6px;" id="topic-mode-tabs">
+      <button class="btn btn-xs" id="tm-everything" onclick="setTopicMode('everything')">🔥 Everything (viral + politics)</button>
+      <button class="btn btn-xs" id="tm-safe" onclick="setTopicMode('safe')">🛡️ Safe (no politics)</button>
+    </div>
+  </div>
+
+  <!-- TODAY'S GAME PLAN -->
+  <div class="card" style="border:1px solid var(--orange);background:var(--orange-bg);margin-bottom:16px;">
+    <div class="card-hd"><h3>⚡ Today's Game Plan</h3><span style="font-size:11px;color:var(--text3);" id="plan-time"></span></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">One click: I look at your latest numbers + what's trending worldwide and tell you the 3 things to do right now, which platform to focus on, and 2 ready-to-post hooks.</div>
+    <button class="btn btn-primary" onclick="genGamePlan()">⚡ Build my plan for right now</button>
+    <div id="pulse-plan" style="display:none;margin-top:14px;"></div>
+  </div>
+
+  <!-- WHERE TO FOCUS -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-hd"><h3>📊 Where to focus & where to improve</h3><button class="btn btn-ghost btn-xs" onclick="nav('dashboard');setTimeout(openStatsModal,300)">Update my numbers</button></div>
+    <div id="pulse-focus-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;"></div>
+    <div id="pulse-focus-read" style="font-size:13px;color:var(--text2);line-height:1.55;background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:12px;"></div>
+    <button class="btn btn-secondary btn-sm" onclick="genFocusAdvice()">🧠 Deep-dive: AI growth audit</button>
+    <div id="pulse-focus-ai" style="display:none;margin-top:12px;"></div>
+  </div>
+
+  <!-- TRENDING NOW -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-hd">
+      <h3>🔥 Trending right now <span style="font-size:10px;font-weight:700;color:var(--text3);">worldwide · live</span></h3>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn btn-primary btn-xs" id="sort-viral" onclick="setTrendSort('viral')">🚀 Top picks</button>
+        <button class="btn btn-ghost btn-xs" id="sort-latest" onclick="setTrendSort('latest')">🕐 Latest</button>
+        <button class="btn btn-ghost btn-xs" onclick="renderPulseTrending(true)">↻ Refresh</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="pulse-trend-tabs">
+      <button class="btn btn-primary btn-xs" onclick="setPulseTrendCat('all')">🌍 All</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('viral')">🔥 Viral</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('politics')">🏛️ Politics</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('celebrity')">⭐ Celebrity</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('sports')">⚽ Sports</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('music')">🎵 Music</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('world')">🌐 World</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">🌶️ = spice level. Hotter takes get more attention — and more risk. Your call.</div>
+    <div id="pulse-trending"><div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;"><span class="spinner"></span> Scanning what's hot worldwide…</div></div>
+  </div>
+
+  <!-- BEST TIME TO POST -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-hd">
+      <h3>⏰ Best time to post <span style="font-size:10px;font-weight:700;color:var(--text3);">your local time</span></h3>
+      <span style="font-size:11px;color:var(--text3);" id="bt-now"></span>
+    </div>
+    <div id="bt-next-banner" style="background:linear-gradient(90deg,rgba(255,122,0,.16),rgba(255,122,0,.04));border:1px solid var(--orange);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="bt-plat-tabs">
+      <button class="btn btn-primary btn-xs" onclick="setBtPlat('instagram')">📸 Instagram</button>
+      <button class="btn btn-ghost btn-xs" onclick="setBtPlat('tiktok')">🎵 TikTok</button>
+      <button class="btn btn-ghost btn-xs" onclick="setBtPlat('youtube')">▶️ YouTube</button>
+      <button class="btn btn-ghost btn-xs" onclick="setBtPlat('x')">𝕏 Twitter/X</button>
+    </div>
+    <div id="bt-grid"></div>
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;">📈 Log a post you made</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Track what actually works for YOU. After a few logs, your real best hours show up below.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+        <div><label class="form-label">Platform</label>
+          <select class="input" id="bt-log-plat" style="width:130px;">
+            <option value="instagram">📸 Instagram</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="youtube">▶️ YouTube</option>
+            <option value="x">𝕏 Twitter/X</option>
+          </select></div>
+        <div><label class="form-label">Posted at (hour)</label>
+          <select class="input" id="bt-log-hour" style="width:110px;"></select></div>
+        <div><label class="form-label">Views / reach</label>
+          <input class="input" id="bt-log-views" type="number" min="0" placeholder="e.g. 1200" style="width:120px;"></div>
+        <button class="btn btn-primary btn-sm" onclick="logPost()">＋ Log it</button>
+      </div>
+      <div id="bt-personal" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- DAILY 3 -->
+  <div class="card">
+    <div class="card-hd"><h3>✅ Your Daily 3 — do these every day to grow</h3><span style="font-size:11px;color:var(--text3);" id="daily3-date"></span></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">The boring stuff that actually moves followers. Check them off — resets every day.</div>
+    <div id="daily3-list"></div>
+    <div id="daily3-progress" style="font-size:12px;color:var(--green);font-weight:700;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE: CREATOR RADAR
+══════════════════════════════════════════════ -->
+<div class="page" id="page-radar">
+  <div class="page-hd"><h1>📡 Creator Radar</h1><p>The biggest streamers, TikTokers, musicians, footballers & media — open their page in one click, then repost. Plus a full YouTube video maker.</p></div>
+
+  <!-- HOW IT WORKS STRIP -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+    <div style="flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:11px;font-weight:800;color:var(--orange);margin-bottom:3px;">STEP 1 · FIND</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.4;">Pick a creator below. Click <b>TikTok / IG / YouTube</b> to open their page — their newest post sits right at the top.</div>
+    </div>
+    <div style="flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:11px;font-weight:800;color:var(--orange);margin-bottom:3px;">STEP 2 · GRAB CAPTION</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.4;">Hit <b>✨ Repost caption</b> — AI writes an OffScript caption + proper credit, copied to your clipboard.</div>
+    </div>
+    <div style="flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:11px;font-weight:800;color:var(--orange);margin-bottom:3px;">STEP 3 · POST</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.4;">Click <b>Post to IG</b> or <b>Post to TikTok</b> — opens the uploader. Paste your caption and publish.</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input id="radar-search" class="input" placeholder="🔎 Search creators (e.g. Ronaldo, Black Sherif, MrBeast)..." style="flex:1;min-width:220px;" oninput="renderRadar()">
+      <button class="btn btn-secondary btn-sm" onclick="openAddCreator()">➕ Add a creator</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadRadarLatest()">↻ Refresh latest videos</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;" id="radar-cat-tabs"></div>
+  </div>
+
+  <!-- CREATOR GRID -->
+  <div id="radar-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:22px;">
+    <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--text3);">Loading creators…</div>
+  </div>
+
+  <!-- LATEST YOUTUBE VIDEOS -->
+  <div class="card" style="margin-bottom:22px;">
+    <div class="card-hd">
+      <h3>🔴 Latest videos from these creators <span style="font-size:10px;font-weight:700;color:var(--text3);">(live from YouTube)</span></h3>
+      <button class="btn btn-ghost btn-xs" onclick="loadRadarLatest()">↻ Refresh</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">Pulled live from each creator's YouTube channel. Click to watch, then react/repost.</div>
+    <div id="radar-latest"><div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;"><span class="spinner"></span> Fetching newest uploads…</div></div>
+  </div>
+
+  <!-- ══ YOUTUBE VIDEO MAKER ══ -->
+  <div class="card" style="border:1px solid var(--orange);background:var(--orange-bg);">
+    <div class="card-hd"><h3>🎬 Make a Legit YouTube Video</h3></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Three ways to go from idea → finished video. AI writes the script, the hook, the shot list, titles and thumbnail concepts so you just film and upload.</div>
+    <div class="tabs" id="video-tabs">
+      <button class="tab-btn active" onclick="switchVideoTab('vscript',this)">📝 Script + Shot List</button>
+      <button class="tab-btn" onclick="switchVideoTab('vreact',this)">🔁 Repost → Video</button>
+      <button class="tab-btn" onclick="switchVideoTab('videas',this)">🔥 Trending Ideas</button>
+    </div>
+
+    <!-- SCRIPT + SHOT LIST -->
+    <div id="vt-vscript">
+      <div class="form-group"><label class="form-label">What's the video about?</label><textarea id="vid-topic" class="input textarea" rows="2" placeholder="e.g. How hackers steal your WhatsApp in 2 minutes — and how to stop it"></textarea></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <select id="vid-len" class="input" style="flex:1;min-width:150px;"><option value="YouTube Short (under 60s, vertical)">Short (under 60s)</option><option value="3-5 minute video">3–5 min video</option><option value="8-12 minute video">8–12 min video</option></select>
+        <select id="vid-tone" class="input" style="flex:1;min-width:150px;"><option>Fast & punchy (Gen Z)</option><option>Explainer / educational</option><option>Reaction / commentary</option><option>Storytime / documentary</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="genVideoScript()">🎬 Generate full script + shot list</button>
+      <div id="vid-script-result" style="display:none;margin-top:14px;"></div>
+    </div>
+
+    <!-- REPOST -> VIDEO -->
+    <div id="vt-vreact" style="display:none;">
+      <div class="form-group"><label class="form-label">Creator / post you're reacting to</label><input id="vid-react-who" class="input" placeholder="e.g. IShowSpeed's new clip, Black Sherif interview, Ronaldo goal..."></div>
+      <div class="form-group"><label class="form-label">Your angle (optional)</label><input id="vid-react-angle" class="input" placeholder="What's YOUR take? Leave blank and AI picks the best angle"></div>
+      <button class="btn btn-primary" onclick="genReactVideo()">🔁 Build my reaction video outline</button>
+      <div id="vid-react-result" style="display:none;margin-top:14px;"></div>
+    </div>
+
+    <!-- TRENDING IDEAS -->
+    <div id="vt-videas" style="display:none;">
+      <div class="form-group"><label class="form-label">Niche / theme</label><input id="vid-ideas-niche" class="input" placeholder="e.g. cybersecurity tips, Ghana tech, gaming news, online scams" value="cybersecurity & tech for everyday people"></div>
+      <button class="btn btn-primary" onclick="genVideoIdeas()">🔥 Give me 8 videos I can film today</button>
+      <div id="vid-ideas-result" style="display:none;margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CREATOR MODAL -->
+<div id="add-creator-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:22px;width:min(440px,92vw);max-height:90vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h3 style="margin:0;">➕ Add a creator</h3><button class="btn btn-ghost btn-xs" onclick="closeAddCreator()">✕</button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Add anyone you want to track. Paste their usernames (no @ needed). Leave blank what they don't have.</div>
+    <div class="form-group"><label class="form-label">Name</label><input id="ac-name" class="input" placeholder="e.g. Stonebwoy"></div>
+    <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label class="form-label">Category</label><select id="ac-cat" class="input"><option value="streamers">🎮 Streamers</option><option value="tiktokers">📱 TikTokers</option><option value="musicians">🎵 Musicians</option><option value="footballers">⚽ Footballers</option><option value="basketball">🏀 Basketball</option><option value="media">📰 Media</option><option value="ghana">🇬🇭 Ghana</option><option value="entertainment">⭐ Entertainment</option></select></div>
+      <div class="form-group"><label class="form-label">Emoji</label><input id="ac-icon" class="input" placeholder="🎵"></div>
+    </div>
+    <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label class="form-label">TikTok username</label><input id="ac-tt" class="input" placeholder="username"></div>
+      <div class="form-group"><label class="form-label">Instagram username</label><input id="ac-ig" class="input" placeholder="username"></div>
+      <div class="form-group"><label class="form-label">YouTube handle</label><input id="ac-yt" class="input" placeholder="@handle or channel"></div>
+      <div class="form-group"><label class="form-label">X / Twitter</label><input id="ac-x" class="input" placeholder="username"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="saveCustomCreator()">Save creator</button>
   </div>
 </div>
 
@@ -1880,6 +2099,8 @@ const PAGE_TITLES = {
   dashboard: ['Dashboard', 'OffScript Media Command Center'],
   news: ['News & Trends', 'Cybersecurity & tech stories worth covering'],
   content: ['AI Content', 'Generate on-brand posts with Claude'],
+  radar: ['Creator Radar', 'Find, open & repost the biggest creators — plus make YouTube videos'],
+  pulse: ['Pulse — Today', 'What is trending right now & exactly what to post to grow'],
   schedule: ['Schedule', 'Plan and manage your content queue'],
   engage: ['Engage', 'Manage comments and grow your community'],
   platforms: ['Platforms', 'Your social media presence'],
@@ -1915,6 +2136,8 @@ function nav(page) {
     setTimeout(() => { updateGrowthDash(); updateGrowthChart(); }, 100);
   }
   if (page === 'studio') { switchTab('tiktok-script','studio-tabs'); }
+  if (page === 'radar') { initRadar(); }
+  if (page === 'pulse') { initPulse(); }
   if (page === 'monetize') {
     const saved = JSON.parse(localStorage.getItem('offscript_followers') || '{}');
     if (saved.tt) { const el=document.getElementById('f-tiktok'); if(el) el.value=saved.tt; }
@@ -2081,6 +2304,33 @@ const ALL_FEEDS = [
   { url:'https://feeds.feedburner.com/TheHackersNews',             name:'The Hacker News',   cat:'cyber',  icon:'🛡️' },
   { url:'https://www.bleepingcomputer.com/feed/',                  name:'BleepingComputer',  cat:'cyber',  icon:'🛡️' },
   { url:'https://krebsonsecurity.com/feed/',                       name:'Krebs on Security', cat:'cyber',  icon:'🛡️' },
+
+  // 🔥 VIRAL / INTERNET CULTURE
+  { url:'https://www.reddit.com/r/popular/.rss',                   name:'Reddit Popular',    cat:'viral', icon:'🔥' },
+  { url:'https://www.reddit.com/r/all/top/.rss?t=day',             name:'Reddit Top Today',  cat:'viral', icon:'🔥' },
+  { url:'https://mashable.com/feeds/rss/all',                      name:'Mashable',          cat:'viral', icon:'🔥' },
+  { url:'https://www.dailydot.com/feed/',                          name:'Daily Dot',         cat:'viral', icon:'🔥' },
+
+  // 🌐 WORLD / BREAKING
+  { url:'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en',   name:'Google News',       cat:'world', icon:'🌐' },
+  { url:'https://www.aljazeera.com/xml/rss/all.xml',               name:'Al Jazeera',        cat:'world', icon:'🌐' },
+  { url:'https://feeds.skynews.com/feeds/rss/world.xml',           name:'Sky News',          cat:'world', icon:'🌐' },
+  { url:'https://www.theguardian.com/world/rss',                   name:'Guardian World',    cat:'world', icon:'🌐' },
+
+  // 🏛️ POLITICS (controversy = engagement — read the room)
+  { url:'https://www.politico.com/rss/politicopicks.xml',          name:'Politico',          cat:'politics', icon:'🏛️' },
+  { url:'https://thehill.com/news/feed/',                          name:'The Hill',          cat:'politics', icon:'🏛️' },
+  { url:'http://feeds.bbci.co.uk/news/politics/rss.xml',           name:'BBC Politics',      cat:'politics', icon:'🏛️' },
+  { url:'https://www.theguardian.com/politics/rss',               name:'Guardian Politics', cat:'politics', icon:'🏛️' },
+
+  // ⭐ CELEBRITY / DRAMA
+  { url:'https://pagesix.com/feed/',                               name:'Page Six',          cat:'celebrity', icon:'⭐' },
+  { url:'https://www.eonline.com/syndication/feeds/rssfeeds/topstories.xml', name:'E! News',  cat:'celebrity', icon:'⭐' },
+  { url:'https://www.complex.com/feed',                            name:'Complex',           cat:'celebrity', icon:'⭐' },
+
+  // 🎵 MUSIC / HIP HOP
+  { url:'https://www.hotnewhiphop.com/rss',                        name:'HotNewHipHop',      cat:'music', icon:'🎵' },
+  { url:'https://www.nme.com/news/music/feed',                    name:'NME',               cat:'music', icon:'🎵' },
 ];
 
 let allNewsCache = [];
@@ -2089,7 +2339,9 @@ let currentFilter = 'all';
 const CAT_COLORS = {
   us:'badge-blue', ghana:'badge-green', global:'badge-purple',
   tech:'badge-blue', entertainment:'badge-orange', sports:'badge-yellow',
-  business:'badge-green', cyber:'badge-red', gaming:'badge-purple'
+  business:'badge-green', cyber:'badge-red', gaming:'badge-purple',
+  viral:'badge-orange', world:'badge-blue', politics:'badge-red',
+  celebrity:'badge-yellow', music:'badge-purple'
 };
 
 async function fetchOneFeed(feed) {
@@ -2265,11 +2517,15 @@ function timeAgo(date) {
 
 async function callClaude(prompt, systemExtra='') {
   const key = localStorage.getItem('offscript_api_key') || apiKey || BAKED_KEY;
-  const system = `You are the AI writing assistant for OffScript Media, a cybersecurity and technology media brand created by Paul Agyare, a cybersecurity student at BYU-Idaho (Mountain Time, US). 
+  const topicMode = localStorage.getItem('offscript_topic_mode') || 'everything';
+  const coverage = topicMode === 'safe'
+    ? `OffScript Media covers: entertainment, sports, gaming, tech, Ghana news, US news (non-political), global events, business, cybersecurity. NEVER covers politics, politicians, political parties, elections, or political debates. If a trending story is political, skip it and find a different angle.`
+    : `OffScript Media is a fast, bold media brand that covers EVERYTHING trending and viral worldwide — entertainment, sports, gaming, tech, music, celebrity drama, world news, politics, internet culture, Ghana and US news. Lead with whatever is hottest right now and take a clear, confident angle to capture attention and spark comments. You CAN cover political and controversial trending topics. Hard limits: no hate speech, no slurs, no harassment of private individuals, and never state false claims as fact. When a topic is legally or reputationally risky, add a short "⚠️ heads-up" line so Paul can decide. Otherwise, go for maximum attention, shares and engagement.`;
+  const system = `You are the AI writing assistant for OffScript Media, a media brand created by Paul Agyare, based in Mountain Time, US.
 
 Brand voice: ${brandVoice}
 
-OffScript Media covers: entertainment, sports, gaming, tech, Ghana news, US news (non-political), global events, business, cybersecurity. NEVER covers politics, politicians, political parties, elections, or political debates. If a trending story is political, skip it and find a different angle.
+${coverage}
 
 Rules:
 - Write in Paul's authentic voice — real, direct, never stiff or corporate
@@ -3748,6 +4004,596 @@ function copySuggestion(idx) {
   if (!s || !s.post) return;
   navigator.clipboard.writeText(s.post).then(() => toast('Copied! Go post it now', 'success'));
 }
+
+// ════════════════════════════════════════════
+// 📡 CREATOR RADAR — find · open · repost · make videos
+// ════════════════════════════════════════════
+const RADAR_CATS = [
+  ['all','🌐 All'],['streamers','🎮 Streamers'],['tiktokers','📱 TikTokers'],
+  ['musicians','🎵 Musicians'],['footballers','⚽ Footballers'],['basketball','🏀 Basketball'],
+  ['media','📰 Media & News'],['ghana','🇬🇭 Ghana'],['entertainment','⭐ Entertainment'],['mine','➕ My Creators']
+];
+
+// fields: n=name c=category e=emoji + handles tt/ig/yt/x · note · hot · latest(pull YT feed)
+const RADAR_CREATORS = [
+  // 🎮 STREAMERS / GAMING
+  { n:'MrBeast', c:'streamers', e:'🎮', tt:'mrbeast', ig:'mrbeast', yt:'@MrBeast', x:'MrBeast', note:'300M+. Anything he drops goes viral instantly.', hot:true, latest:true },
+  { n:'IShowSpeed', c:'streamers', e:'🎮', tt:'ishowspeed', ig:'ishowspeed', yt:'@IShowSpeed', x:'ishowspeed', note:'Wild reactions = perfect repost + commentary.', hot:true, latest:true },
+  { n:'Kai Cenat', c:'streamers', e:'🎮', tt:'kaicenat', ig:'kaicenat', yt:'@KaiCenat', x:'KaiCenat', note:'#1 streamer, huge Gen Z reach.', hot:true },
+  { n:'Ninja', c:'streamers', e:'🎮', tt:'ninja', ig:'ninja', yt:'@Ninja', x:'Ninja', note:'OG gamer, great for gaming culture takes.', hot:false },
+  { n:'Pokimane', c:'streamers', e:'🎮', tt:'pokimane', ig:'pokimane', yt:'@pokimane', x:'pokimanelol', note:'Tech + gaming crossover audience.', hot:false },
+
+  // 📱 TIKTOKERS
+  { n:'Khaby Lame', c:'tiktokers', e:'📱', tt:'khaby.lame', ig:'khaby00', yt:'@khaby.lame', x:'', note:'Most-followed on TikTok. Silent comedy, easy duets.', hot:true },
+  { n:'Charli DAmelio', c:'tiktokers', e:'📱', tt:'charlidamelio', ig:'charlidamelio', yt:'', x:'', note:'Dance + lifestyle, massive Gen Z reach.', hot:false },
+  { n:'Bella Poarch', c:'tiktokers', e:'📱', tt:'bellapoarch', ig:'bellapoarch', yt:'@BellaPoarch', x:'bellapoarch', note:'Music + viral trends.', hot:false },
+  { n:'Brent Rivera', c:'tiktokers', e:'📱', tt:'brentrivera', ig:'brentrivera', yt:'@BrentRivera', x:'brentrivera', note:'Comedy skits that travel everywhere.', hot:false },
+  { n:'Addison Rae', c:'tiktokers', e:'📱', tt:'addisonre', ig:'addisonraee', yt:'', x:'', note:'Pop culture crossover.', hot:false },
+
+  // 🎵 MUSICIANS
+  { n:'Drake', c:'musicians', e:'🎵', tt:'', ig:'champagnepapi', yt:'@Drake', x:'Drake', note:'Every post is a culture moment.', hot:true },
+  { n:'The Weeknd', c:'musicians', e:'🎵', tt:'', ig:'theweeknd', yt:'@TheWeeknd', x:'theweeknd', note:'Global pop reach.', hot:false },
+  { n:'Burna Boy', c:'musicians', e:'🎵', tt:'', ig:'burnaboygram', yt:'@burnaboy', x:'burnaboy', note:'Afrobeats giant — strong African audience.', hot:true, latest:true },
+  { n:'Wizkid', c:'musicians', e:'🎵', tt:'', ig:'wizkidayo', yt:'@wizkidayo', x:'wizkidayo', note:'Afrobeats royalty.', hot:false },
+  { n:'Davido', c:'musicians', e:'🎵', tt:'davidoadeleke', ig:'davido', yt:'@DavidoOfficial', x:'davido', note:'Huge engagement, loves fan interaction.', hot:true, latest:true },
+
+  // 🇬🇭 GHANA
+  { n:'Black Sherif', c:'ghana', e:'🇬🇭', tt:'blacksherif_', ig:'blacksherif_', yt:'@BlackSherif', x:'blacksherif_', note:'Ghana music breakout star.', hot:true, latest:true },
+  { n:'Sarkodie', c:'ghana', e:'🇬🇭', tt:'sarkodie', ig:'sarkodie', yt:'@sarkodie', x:'sarkodie', note:'Ghana rap legend, big global diaspora.', hot:true, latest:true },
+  { n:'Stonebwoy', c:'ghana', e:'🇬🇭', tt:'stonebwoy', ig:'stonebwoyb', yt:'@stonebwoy', x:'stonebwoyb', note:'Afro-dancehall king.', hot:false },
+  { n:'Shatta Wale', c:'ghana', e:'🇬🇭', tt:'shattawale', ig:'shattawalenima', yt:'@ShattaWaleVEVO', x:'shattawalegh', note:'Loud, viral, always trending in GH.', hot:true },
+  { n:'Delay', c:'ghana', e:'🇬🇭', tt:'', ig:'delayghana', yt:'@DelayTV', x:'DelayGhana', note:'Top GH TV personality + interviews.', hot:true },
+  { n:'Zionfelix', c:'ghana', e:'🇬🇭', tt:'zionfelix', ig:'zionfelixdotcom', yt:'@Zionfelixdotcom', x:'ZionFelix', note:'GH celeb blogger, fast on gossip.', hot:false },
+  { n:'GhanaWeb', c:'ghana', e:'🇬🇭', tt:'', ig:'ghanaweb', yt:'@GhanaWebTV', x:'GhanaWeb', note:'#1 Ghana news — react with your angle.', hot:true },
+  { n:'Pulse Ghana', c:'ghana', e:'🇬🇭', tt:'', ig:'pulseghana', yt:'@PulseGhana', x:'PulseGhana', note:'GH entertainment news.', hot:false },
+
+  // ⚽ FOOTBALLERS
+  { n:'Cristiano Ronaldo', c:'footballers', e:'⚽', tt:'', ig:'cristiano', yt:'@cristiano', x:'Cristiano', note:'Most-followed human on Earth.', hot:true, latest:true },
+  { n:'Lionel Messi', c:'footballers', e:'⚽', tt:'', ig:'leomessi', yt:'', x:'', note:'Every post breaks the internet.', hot:true },
+  { n:'Mohamed Salah', c:'footballers', e:'⚽', tt:'', ig:'mosalah', yt:'', x:'MoSalah', note:'African football icon.', hot:false },
+  { n:'Mohammed Kudus', c:'footballers', e:'⚽', tt:'', ig:'kudus_mohammed', yt:'', x:'KudusMohammed', note:'Ghana star — big match-day buzz.', hot:true },
+  { n:'Inaki Williams', c:'footballers', e:'⚽', tt:'', ig:'williamsinaki', yt:'', x:'inakiwilliams', note:'Ghana Black Stars forward.', hot:false },
+  { n:'Ghana FA', c:'footballers', e:'⚽', tt:'', ig:'ghanafaofficial', yt:'', x:'ghanafaofficial', note:'Official Black Stars — match-day gold.', hot:false },
+
+  // 🏀 BASKETBALL
+  { n:'LeBron James', c:'basketball', e:'🏀', tt:'', ig:'kingjames', yt:'@kingjames', x:'KingJames', note:'Biggest name in basketball.', hot:true },
+  { n:'Stephen Curry', c:'basketball', e:'🏀', tt:'', ig:'stephencurry30', yt:'@StephenCurry', x:'StephenCurry30', note:'Global crossover appeal.', hot:false },
+  { n:'Giannis', c:'basketball', e:'🏀', tt:'', ig:'giannis_an34', yt:'', x:'Giannis_An34', note:'Inspiring story, big highlights.', hot:false },
+  { n:'NBA', c:'basketball', e:'🏀', tt:'nba', ig:'nba', yt:'@NBA', x:'NBA', note:'Official league — react to every highlight.', hot:true, latest:true },
+  { n:'House of Highlights', c:'basketball', e:'🏀', tt:'houseofhighlights', ig:'houseofhighlights', yt:'@houseofhighlights', x:'HoHighlights', note:'Viral hoops clips, repost-ready.', hot:true },
+
+  // 📰 MEDIA & NEWS
+  { n:'ESPN', c:'media', e:'📰', tt:'espn', ig:'espn', yt:'@espn', x:'ESPN', note:'React to big sports moments first.', hot:true },
+  { n:'Bleacher Report', c:'media', e:'📰', tt:'bleacherreport', ig:'bleacherreport', yt:'@bleacherreport', x:'BleacherReport', note:'Sports culture + viral clips.', hot:false },
+  { n:'Complex', c:'media', e:'📰', tt:'complex', ig:'complex', yt:'@Complex', x:'Complex', note:'Hip hop + culture news.', hot:true },
+  { n:'TMZ', c:'media', e:'📰', tt:'tmz_tv', ig:'tmz_tv', yt:'@TMZ', x:'TMZ', note:'Celebrity breaking news, react fast.', hot:true },
+  { n:'CNN Breaking', c:'media', e:'📰', tt:'cnn', ig:'cnn', yt:'@CNN', x:'cnnbrk', note:'Breaking world news.', hot:false },
+
+  // ⭐ ENTERTAINMENT
+  { n:'DJ Akademiks', c:'entertainment', e:'⭐', tt:'akademiks', ig:'akademiks', yt:'@Akademiks', x:'Akademiks', note:'Hip hop commentary, Gen Z heavy.', hot:true },
+  { n:'Daily Loud', c:'entertainment', e:'⭐', tt:'dailyloud', ig:'dailyloud', yt:'@DailyLoud', x:'DailyLoud', note:'Fast music/culture news, repost-ready.', hot:true },
+  { n:'Genius', c:'entertainment', e:'⭐', tt:'genius', ig:'genius', yt:'@Genius', x:'Genius', note:'Music breakdowns + lyrics.', hot:false },
+];
+
+let radarCat = 'all';
+let radarLoaded = false;
+
+function slug(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function getCustom(){ try{ return JSON.parse(localStorage.getItem('radar_custom')||'[]'); }catch(e){ return []; } }
+function allCreators(){ return RADAR_CREATORS.concat(getCustom()).map(c=>({...c,id:slug(c.n)})); }
+
+function initRadar(){
+  renderRadarTabs();
+  renderRadar();
+  if(!radarLoaded){
+    radarLoaded = true;
+    switchVideoTab('vscript', document.querySelector('#video-tabs .tab-btn'));
+    setTimeout(loadRadarLatest, 400);
+  }
+}
+
+function renderRadarTabs(){
+  const el=document.getElementById('radar-cat-tabs'); if(!el) return;
+  el.innerHTML = RADAR_CATS.map(([k,label])=>`<button class="btn ${k===radarCat?'btn-primary':'btn-ghost'} btn-xs" onclick="setRadarCat('${k}')">${label}</button>`).join('');
+}
+function setRadarCat(cat){ radarCat=cat; renderRadarTabs(); renderRadar(); }
+
+function openProfile(plat,user){
+  const u=(user||'').replace(/^@/,'');
+  const map={ tt:`https://www.tiktok.com/@${u}`, ig:`https://www.instagram.com/${u}/`, yt:`https://www.youtube.com/${user&&user.startsWith('@')?user:'@'+u}`, x:`https://x.com/${u}` };
+  if(map[plat]) window.open(map[plat],'_blank');
+}
+function pBtn(plat,user,label,color){ return `<button class="btn btn-xs" style="background:${color};color:#fff;border:none;" onclick="openProfile('${plat}','${user}')">${label}</button>`; }
+
+function radarCard(c){
+  const btns=[];
+  if(c.tt) btns.push(pBtn('tt',c.tt,'TikTok','#111'));
+  if(c.ig) btns.push(pBtn('ig',c.ig,'Instagram','#c13584'));
+  if(c.yt) btns.push(pBtn('yt',c.yt,'YouTube','#e02f2f'));
+  if(c.x)  btns.push(pBtn('x',c.x,'X','#1d9bf0'));
+  return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;${c.hot?'border-left:3px solid var(--orange);':''}">
+    <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;">
+      <div style="font-size:24px;">${c.e}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${c.n}${c.hot?'<span style="font-size:9px;background:var(--orange);color:#fff;padding:1px 5px;border-radius:3px;">HOT</span>':''}${c._custom?'<span style="font-size:9px;background:var(--purple);color:#fff;padding:1px 5px;border-radius:3px;">MINE</span>':''}</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.35;margin-top:2px;">${c.note||''}</div>
+      </div>
+      ${c._custom?`<button class="btn btn-ghost btn-xs" title="Remove" onclick="removeCustom('${c.id}')">✕</button>`:''}
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:5px;letter-spacing:0.4px;">OPEN THEIR PAGE →</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">${btns.join('')||'<span style="font-size:11px;color:var(--text3);">No links yet</span>'}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-xs" onclick="genRepostCaption('${c.id}')">✨ Repost caption</button>
+      <button class="btn btn-secondary btn-xs" onclick="makeVideoFrom('${c.id}')">🎬 Make video</button>
+    </div>
+  </div>`;
+}
+
+function renderRadar(){
+  const feed=document.getElementById('radar-feed'); if(!feed) return;
+  const q=(document.getElementById('radar-search')?.value||'').toLowerCase().trim();
+  let list=allCreators();
+  if(radarCat==='mine') list=list.filter(c=>c._custom);
+  else if(radarCat!=='all') list=list.filter(c=>c.c===radarCat);
+  if(q) list=list.filter(c=>(c.n+' '+(c.note||'')+' '+c.c).toLowerCase().includes(q));
+  if(!list.length){ feed.innerHTML='<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--text3);">No creators here yet. '+(radarCat==='mine'?'Tap ➕ Add a creator to build your own list.':'Try another category or search.')+'</div>'; return; }
+  feed.innerHTML=list.map(radarCard).join('');
+}
+
+// ── REPOST CAPTION ──
+async function genRepostCaption(id){
+  const c=allCreators().find(x=>x.id===id); if(!c) return;
+  showCaptionModal(c.n,'__LOADING__',c.ig,c.tt);
+  try{
+    const text=await callClaude(`I'm reposting / reacting to content from ${c.n} (${c.note||c.c}) on OffScript Media. Write ONE ready-to-paste caption for Instagram and TikTok that: hooks in the first line, adds a sharp OffScript take, credits the original creator (like "🎥: ${c.n}"), and ends with 4-6 relevant hashtags. Keep it under 220 characters before the hashtags. Return ONLY the caption text, nothing else.`);
+    showCaptionModal(c.n,text,c.ig,c.tt);
+  }catch(e){ showCaptionModal(c.n,'⚠️ '+e.message+'\n\nTip: add your Claude API key in Settings to generate AI captions.',c.ig,c.tt); }
+}
+function showCaptionModal(name,text,ig,tt){
+  let ov=document.getElementById('caption-modal');
+  if(!ov){ ov=document.createElement('div'); ov.id='caption-modal'; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;'; document.body.appendChild(ov); }
+  const loading = text==='__LOADING__';
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:20px;width:min(460px,92vw);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;font-size:15px;">✨ Repost caption · ${name}</h3><button class="btn btn-ghost btn-xs" onclick="document.getElementById('caption-modal').remove()">✕</button></div>
+    ${loading?'<div style="padding:24px;text-align:center;color:var(--text3);"><span class="spinner"></span> Writing your caption…</div>':
+    `<textarea id="caption-text" class="input textarea" rows="6" style="margin-bottom:12px;">${(text||'').replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="copyCaption()">📋 Copy</button>
+      ${ig?`<button class="btn btn-secondary btn-sm" onclick="postTo('ig')">📸 Post to Instagram</button>`:''}
+      ${tt?`<button class="btn btn-secondary btn-sm" onclick="postTo('tt')">🎵 Post to TikTok</button>`:''}
+      <button class="btn btn-secondary btn-sm" onclick="postTo('yt')">▶ YouTube Studio</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;">Caption is copied automatically when you click a Post button — just paste it after you upload.</div>`}
+  </div>`;
+}
+function copyCaption(){ const t=document.getElementById('caption-text')?.value||''; navigator.clipboard.writeText(t).then(()=>toast('Caption copied!','success')); }
+function postTo(plat){
+  const t=document.getElementById('caption-text')?.value||'';
+  if(t) navigator.clipboard.writeText(t).then(()=>toast('Caption copied — paste it after uploading','success'));
+  const map={ ig:'https://www.instagram.com/', tt:'https://www.tiktok.com/upload?lang=en', yt:'https://studio.youtube.com/' };
+  window.open(map[plat],'_blank');
+}
+
+// ── ADD / REMOVE CUSTOM CREATORS ──
+function openAddCreator(){ document.getElementById('add-creator-modal').style.display='flex'; }
+function closeAddCreator(){ document.getElementById('add-creator-modal').style.display='none'; }
+function saveCustomCreator(){
+  const n=document.getElementById('ac-name').value.trim();
+  if(!n){ toast('Enter a name first','error'); return; }
+  const c={ n, c:document.getElementById('ac-cat').value, e:document.getElementById('ac-icon').value.trim()||'⭐',
+    tt:document.getElementById('ac-tt').value.trim(), ig:document.getElementById('ac-ig').value.trim(),
+    yt:document.getElementById('ac-yt').value.trim(), x:document.getElementById('ac-x').value.trim(),
+    note:'Added by you', _custom:true };
+  const arr=getCustom(); arr.push(c); localStorage.setItem('radar_custom',JSON.stringify(arr));
+  ['ac-name','ac-icon','ac-tt','ac-ig','ac-yt','ac-x'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  closeAddCreator(); toast('Creator added to your list!','success');
+  radarCat='mine'; renderRadarTabs(); renderRadar();
+}
+function removeCustom(id){
+  let arr=getCustom().filter(c=>slug(c.n)!==id);
+  localStorage.setItem('radar_custom',JSON.stringify(arr));
+  renderRadar(); toast('Removed','info');
+}
+
+// ── LATEST VIDEOS (live from YouTube, no API key needed) ──
+async function resolveChannelId(handle){
+  if(!handle) return null;
+  const h = handle.startsWith('@')?handle:'@'+handle;
+  const cache = JSON.parse(localStorage.getItem('radar_ytids')||'{}');
+  if(cache[h]) return cache[h];
+  const page = `https://www.youtube.com/${h}`;
+  const proxies = [
+    {u:`https://api.allorigins.win/get?url=${encodeURIComponent(page)}`, json:true},
+    {u:`https://corsproxy.io/?${encodeURIComponent(page)}`, json:false},
+  ];
+  for(const p of proxies){
+    try{
+      const res = await fetch(p.u,{signal:AbortSignal.timeout(9000)});
+      if(!res.ok) continue;
+      const html = p.json ? (await res.json()).contents : await res.text();
+      const m = html && html.match(/"(?:channelId|externalId)":"(UC[\w-]{20,})"/);
+      if(m){ cache[h]=m[1]; localStorage.setItem('radar_ytids',JSON.stringify(cache)); return m[1]; }
+    }catch(e){ continue; }
+  }
+  return null;
+}
+async function loadRadarLatest(){
+  const el=document.getElementById('radar-latest'); if(!el) return;
+  el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;"><span class="spinner"></span> Fetching newest uploads…</div>';
+  const list = allCreators().filter(c=>c.yt && c.latest);
+  const tasks = list.map(async c=>{
+    try{
+      const id = await resolveChannelId(c.yt);
+      if(!id) return null;
+      const items = await fetchOneFeed({url:`https://www.youtube.com/feeds/videos.xml?channel_id=${id}`, name:c.n, cat:c.c, icon:c.e});
+      if(!items || !items.length) return null;
+      return { c, v:items[0] };
+    }catch(e){ return null; }
+  });
+  const results = (await Promise.allSettled(tasks)).map(r=>r.status==='fulfilled'?r.value:null).filter(Boolean);
+  if(!results.length){ el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;">Couldn\'t pull live videos right now (YouTube/proxy busy). Tap any creator\'s YouTube button above to see their latest directly.</div>'; return; }
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">'+results.map(({c,v})=>{
+    const vid=(v.link.match(/[?&]v=([\w-]+)/)||[])[1];
+    const thumb = vid?`https://i.ytimg.com/vi/${vid}/mqdefault.jpg`:'';
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+      ${thumb?`<a href="${v.link}" target="_blank"><img src="${thumb}" loading="lazy" style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover;"></a>`:''}
+      <div style="padding:10px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${c.e} ${c.n} · ${v.date}</div>
+        <div style="font-size:12px;font-weight:600;line-height:1.35;margin-bottom:8px;max-height:50px;overflow:hidden;">${v.title}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <a href="${v.link}" target="_blank" class="btn btn-primary btn-xs">▶ Watch</a>
+          <button class="btn btn-secondary btn-xs" onclick="makeVideoFrom('${c.id}')">🎬 React</button>
+        </div>
+      </div></div>`;
+  }).join('')+'</div>';
+}
+
+// ════════════════════════════════════════════
+// 🎬 YOUTUBE VIDEO MAKER
+// ════════════════════════════════════════════
+function switchVideoTab(name,btn){
+  ['vscript','vreact','videas'].forEach(n=>{const el=document.getElementById('vt-'+n); if(el) el.style.display = n===name?'block':'none';});
+  document.querySelectorAll('#video-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function makeVideoFrom(id){
+  const c=allCreators().find(x=>x.id===id);
+  if(currentPage!=='radar') nav('radar');
+  switchVideoTab('vreact', document.querySelectorAll('#video-tabs .tab-btn')[1]);
+  const who=document.getElementById('vid-react-who'); if(who && c) who.value=`${c.n}'s latest content`;
+  const tgt=document.getElementById('vt-vreact'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function genVideoScript(){
+  const topic=document.getElementById('vid-topic').value.trim(); if(!topic){ toast('Tell me what the video is about','error'); return; }
+  const len=document.getElementById('vid-len').value, tone=document.getElementById('vid-tone').value;
+  const el=document.getElementById('vid-script-result'); showLoading(el);
+  try{
+    const text=await callClaude(`Write a complete ${len} YouTube video for OffScript Media. Topic: "${topic}". Tone: ${tone}. Clearly label these sections: 1) THREE title options, 2) a 5-second HOOK (exact words to say on camera), 3) the full SCRIPT broken into sections with spoken lines, 4) a SHOT LIST / B-roll idea for each section, 5) on-screen TEXT cues, 6) TWO thumbnail concepts, 7) DESCRIPTION + tags. Make it filmable today by one person with a phone.`);
+    showResult(el,text);
+  }catch(e){ el.style.display='block'; el.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings to use this.</span></div>`; }
+}
+async function genReactVideo(){
+  const who=document.getElementById('vid-react-who').value.trim(); if(!who){ toast('Who/what are you reacting to?','error'); return; }
+  const angle=document.getElementById('vid-react-angle').value.trim();
+  const el=document.getElementById('vid-react-result'); showLoading(el);
+  try{
+    const text=await callClaude(`Build a YouTube reaction / commentary video outline for OffScript Media reacting to ${who}.${angle?' My angle: '+angle+'.':''} Include: THREE clickable titles, a HOOK, a section-by-section outline (intro → set up the clip → reaction beats → my take → call to action), exactly what to SAY at each beat, where to insert the clip, a fair-use / credit reminder, a thumbnail concept, and a description + tags. Keep OffScript's authentic, direct voice.`);
+    showResult(el,text);
+  }catch(e){ el.style.display='block'; el.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings to use this.</span></div>`; }
+}
+async function genVideoIdeas(){
+  const niche=document.getElementById('vid-ideas-niche').value.trim()||'cybersecurity & tech';
+  const el=document.getElementById('vid-ideas-result'); showLoading(el);
+  try{
+    const text=await callClaude(`Give me 8 YouTube video ideas for OffScript Media in the "${niche}" niche that I can film today. For each idea give: a clickable TITLE, the HOOK, a one-line premise, and why it will perform NOW. Mix Shorts and long-form, and tie to current trends where you can.`);
+    showResult(el,text);
+  }catch(e){ el.style.display='block'; el.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings to use this.</span></div>`; }
+}
+
+// ════════════════════════════════════════════
+// 🎯 PULSE — Growth Command Center
+// ════════════════════════════════════════════
+let pulseLoaded=false, pulseTrendCat='all', trendSort='viral';
+
+function initPulse(){
+  syncTopicModeUI();
+  computeFocus();
+  renderDaily3();
+  initBestTime();
+  const pt=document.getElementById('plan-time'); if(pt) pt.textContent=new Date().toLocaleString('en-US',{weekday:'long',hour:'numeric',minute:'2-digit'});
+  if(!pulseLoaded){ pulseLoaded=true; renderPulseTrending(); }
+}
+
+// ── Topic / coverage mode ──
+function getTopicMode(){ return localStorage.getItem('offscript_topic_mode')||'everything'; }
+function setTopicMode(m){ localStorage.setItem('offscript_topic_mode',m); syncTopicModeUI(); toast(m==='everything'?'Coverage: Everything — going for max attention':'Coverage: Safe — no politics','success'); }
+function syncTopicModeUI(){
+  const m=getTopicMode();
+  const e=document.getElementById('tm-everything'), s=document.getElementById('tm-safe');
+  if(e) e.className='btn btn-xs '+(m==='everything'?'btn-primary':'btn-ghost');
+  if(s) s.className='btn btn-xs '+(m==='safe'?'btn-primary':'btn-ghost');
+}
+
+// ── Coach AI helper (broad growth strategist) ──
+async function callPulse(prompt){
+  const key=localStorage.getItem('offscript_api_key')||apiKey||BAKED_KEY;
+  const mode=getTopicMode();
+  const system=`You are the head of growth and social strategy for OffScript Media, run by Paul Agyare (Mountain Time, US). His ONLY goal is fast growth — more followers, views, comments and shares across TikTok, Instagram Reels, YouTube and X. Be a sharp, specific, no-fluff strategist. ${mode==='everything'?'Cover anything trending and viral worldwide including politics, celebrity drama and controversy — controversy drives comments. Hard limits: no hate speech, no slurs, no harassment of private individuals, never state false claims as fact. Flag legally or reputationally risky moves with a short ⚠️ note so he can choose.':'Keep all recommendations non-political and brand-safe.'} Always be concrete: name the platform, the format, the hook, the best posting time, and the exact next action. Keep it short, punchy and scannable.`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system,messages:[{role:'user',content:prompt}]})});
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content?.[0]?.text||'No response.';
+}
+
+// ── Today's Game Plan ──
+async function genGamePlan(){
+  const el=document.getElementById('pulse-plan'); showLoading(el);
+  try{
+    const stats=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+    if(!allNewsCache.length){ try{ await fetchLiveNews(); }catch(e){} }
+    const trends=allNewsCache.slice(0,10).map(n=>`- [${(n.cat||'').toUpperCase()}] ${n.title}`).join('\n')||'(no live trends loaded)';
+    const statLine=`TikTok ${stats.tt_f||0} followers / ${stats.tt_v||0} views · Instagram ${stats.ig_f||0} / ${stats.ig_v||0} · YouTube ${stats.yt_f||0} subs / ${stats.yt_v||0} · X ${stats.tw_f||0} / ${stats.tw_v||0}. Comments so far: ${stats.comments||0}.`;
+    const now=new Date().toLocaleString('en-US',{weekday:'long',hour:'numeric',minute:'2-digit'});
+    const text=await callPulse(`It is ${now}. My current numbers: ${statLine}\n\nTOP TRENDING RIGHT NOW:\n${trends}\n\nGive me my game plan for the next few hours with these exact headers:\n🎯 FOCUS — the ONE platform to prioritize today and why (based on my numbers).\n⚡ DO NOW — exactly 3 actions to take in the next 2 hours.\n🔥 RIDE THE WAVE — pick the 2 hottest trends above and write a ready-to-post hook for each (say which platform).\n💬 COMMENTS HACK — one specific move to spike comments today.\nTight and tactical.`);
+    showResult(el,text);
+  }catch(e){ el.style.display='block'; el.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings to use the coach.</span></div>`; }
+}
+
+// ── Where to focus (rule-based) ──
+function fmtN(n){ n=n||0; if(n>=1e6)return (n/1e6).toFixed(1)+'M'; if(n>=1e3)return (n/1e3).toFixed(1)+'K'; return ''+n; }
+function computeFocus(){
+  const stats=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+  const plats=[
+    {k:'TikTok',f:stats.tt_f||0,v:stats.tt_v||0,icon:'🎵'},
+    {k:'Instagram',f:stats.ig_f||0,v:stats.ig_v||0,icon:'📸'},
+    {k:'YouTube',f:stats.yt_f||0,v:stats.yt_v||0,icon:'▶'},
+    {k:'X',f:stats.tw_f||0,v:stats.tw_v||0,icon:'𝕏'},
+  ];
+  const totF=plats.reduce((a,b)=>a+b.f,0), totV=plats.reduce((a,b)=>a+b.v,0);
+  const comments=stats.comments||0;
+  const cards=document.getElementById('pulse-focus-cards'); if(!cards) return;
+  cards.innerHTML=[
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;"><div style="font-size:11px;color:var(--text3);">TOTAL FOLLOWERS</div><div style="font-size:22px;font-weight:800;">${fmtN(totF)}</div></div>`,
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;"><div style="font-size:11px;color:var(--text3);">TOTAL VIEWS</div><div style="font-size:22px;font-weight:800;">${fmtN(totV)}</div></div>`,
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;"><div style="font-size:11px;color:var(--text3);">COMMENTS</div><div style="font-size:22px;font-weight:800;">${fmtN(comments)}</div></div>`,
+  ].concat(plats.map(p=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;"><div style="font-size:11px;color:var(--text3);">${p.icon} ${p.k}</div><div style="font-size:16px;font-weight:700;">${fmtN(p.f)} <span style="font-size:11px;color:var(--text3);font-weight:500;">followers</span></div></div>`)).join('');
+  const read=document.getElementById('pulse-focus-read'); if(!read) return;
+  if(totF===0){ read.innerHTML='👉 You have not entered your numbers yet. Tap <b>Update my numbers</b> above so I can tell you exactly where to focus. Until then: TikTok is your fastest path from zero — post 1–3 short reaction clips a day and reply to every comment.'; return; }
+  const sorted=[...plats].sort((a,b)=>a.f-b.f);
+  const weakest=sorted[0], strongest=sorted[sorted.length-1];
+  const engRate=totV>0?((comments/totV)*100):0;
+  let msg=`💪 <b>Strongest:</b> ${strongest.k} (${fmtN(strongest.f)} followers). Double down here — post most often and funnel these fans to your other platforms. `;
+  msg+=`🪫 <b>Most headroom:</b> ${weakest.k} (${fmtN(weakest.f)}). Cross-post your best ${strongest.k} content here daily for 2 weeks to close the gap. `;
+  if(comments>0&&engRate<1) msg+=`💬 Your comments-to-views ratio is low (${engRate.toFixed(2)}%). End every post with a question or a hot take to pull replies.`;
+  else if(comments>0) msg+=`💬 Comment rate ${engRate.toFixed(2)}% — keep baiting replies with bold takes.`;
+  read.innerHTML=msg;
+}
+async function genFocusAdvice(){
+  const el=document.getElementById('pulse-focus-ai'); showLoading(el);
+  try{
+    const stats=JSON.parse(localStorage.getItem('offscript_stats')||'{}');
+    const statLine=`TikTok ${stats.tt_f||0}f/${stats.tt_v||0}v · IG ${stats.ig_f||0}f/${stats.ig_v||0}v · YouTube ${stats.yt_f||0}subs/${stats.yt_v||0}v · X ${stats.tw_f||0}f/${stats.tw_v||0}v · comments ${stats.comments||0}.`;
+    const text=await callPulse(`Here are OffScript Media's numbers: ${statLine}\n\nDo a brutally honest growth audit. Tell me: which platform is underperforming and why, the specific content format I should post more of, a realistic 30-day follower target per platform, and the single biggest lever to pull right now for more comments and shares. Be specific with numbers and examples.`);
+    showResult(el,text);
+  }catch(e){ el.style.display='block'; el.innerHTML=`<div class="ai-box"><span style="color:var(--red);">${e.message} — add your Claude API key in Settings.</span></div>`; }
+}
+
+// ── Trending Now ──
+function spiceLevel(item){
+  const t=(item.title+' '+(item.cat||'')).toLowerCase();
+  const hot=['trump','biden','election','war','israel','gaza','protest','shooting','abortion','immigration','arrest','lawsuit','scandal','feud','beef','diss','leak','exposed','controversy','slam','blast','drama','divorce','cheating','dies','killed','racist','banned','fight'];
+  let s=0; hot.forEach(w=>{ if(t.includes(w)) s++; });
+  if(item.cat==='politics') s+=2;
+  if(item.cat==='celebrity'||item.cat==='viral') s+=1;
+  return Math.max(0,Math.min(3,s));
+}
+// Predicted virality 0-100: recency + spice + category weight + engagement-bait keywords
+function viralScore(item,idx,total){
+  let s=0;
+  const sp=spiceLevel(item); s+=sp*16;                 // up to 48 — hot takes drive attention
+  const catW={viral:18,celebrity:14,politics:14,sports:10,music:8,world:6}; s+=catW[item.cat]||5;
+  const recency=total>1?(1-(idx/total)):1; s+=Math.round(recency*22); // fresher = higher
+  const t=(item.title||'').toLowerCase();
+  const bait=['shock','viral','goes viral','breaks','first','new','vs',' v ','why','how','secret','exposed','reveal','confirmed','finally','massive','record','beats'];
+  bait.forEach(w=>{ if(t.includes(w)) s+=2; });
+  if(/\?$/.test(item.title||'')) s+=3;                 // questions = comments
+  return Math.max(1,Math.min(100,Math.round(s)));
+}
+function flameBadge(score){
+  let c='var(--text3)',lbl='cool';
+  if(score>=75){c='var(--red)';lbl='🔥 on fire';}
+  else if(score>=55){c='var(--orange)';lbl='hot';}
+  else if(score>=35){c='var(--yellow)';lbl='warm';}
+  return `<span title="Predicted virality" style="font-size:11px;font-weight:800;color:${c};background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 8px;">${score} ${lbl}</span>`;
+}
+async function renderPulseTrending(force){
+  const el=document.getElementById('pulse-trending'); if(!el) return;
+  if(force||!allNewsCache.length){
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;"><span class="spinner"></span> Scanning what is hot worldwide…</div>';
+    try{ await fetchLiveNews(); }catch(e){}
+  }
+  let list=allNewsCache.slice();
+  if(pulseTrendCat!=='all') list=list.filter(n=>n.cat===pulseTrendCat);
+  const total=list.length;
+  list=list.map((item,idx)=>({item,score:viralScore(item,idx,total)}));
+  if(trendSort==='viral') list.sort((a,b)=>b.score-a.score);
+  list=list.slice(0,18);
+  if(!list.length){ el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:16px;text-align:center;">No trends in this lane right now. Try All or hit Refresh.</div>'; return; }
+  el.innerHTML=list.map(({item,score},i)=>{
+    const safe=item.title.replace(/'/g,'').replace(/"/g,'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const sp=spiceLevel(item); const chili=sp>0?'🌶️'.repeat(sp):'·';
+    const rank=(trendSort==='viral'&&i<3)?`<span style="font-size:11px;font-weight:800;color:var(--orange);">#${i+1} pick</span>`:'';
+    return `<div class="trend-item">
+      <div class="trend-ico" style="font-size:20px;">${item.icon||'📰'}</div>
+      <div class="trend-body">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+          ${flameBadge(score)} ${rank}
+          <span class="badge ${CAT_COLORS[item.cat]||'badge-blue'}">${(item.cat||'').toUpperCase()}</span>
+          <span style="font-size:11px;" title="Spice level">${chili}</span>
+          <span style="font-size:11px;color:var(--text3);">${item.source} · ${item.date}</span>
+        </div>
+        <div style="font-size:13px;font-weight:500;line-height:1.4;"><a href="${item.link}" target="_blank" style="color:var(--text);">${safe}</a></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px;">
+        <button class="btn btn-primary btn-xs" onclick="genFromNews('${safe}')">✨ Post</button>
+        <button class="btn btn-secondary btn-xs" onclick="videoFromTrend('${safe}')">🎬 Video</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setTrendSort(mode){
+  trendSort=mode;
+  const v=document.getElementById('sort-viral'), l=document.getElementById('sort-latest');
+  if(v) v.className='btn btn-xs '+(mode==='viral'?'btn-primary':'btn-ghost');
+  if(l) l.className='btn btn-xs '+(mode==='latest'?'btn-primary':'btn-ghost');
+  renderPulseTrending();
+}
+function setPulseTrendCat(cat){
+  pulseTrendCat=cat;
+  document.querySelectorAll('#pulse-trend-tabs button').forEach(b=>b.className=b.className.replace('btn-primary','btn-ghost'));
+  if(typeof event!=='undefined'&&event&&event.target) event.target.className=event.target.className.replace('btn-ghost','btn-primary');
+  renderPulseTrending();
+}
+function videoFromTrend(title){
+  nav('radar');
+  switchVideoTab('vscript', document.querySelector('#video-tabs .tab-btn'));
+  const t=document.getElementById('vid-topic'); if(t) t.value=title;
+  const tgt=document.getElementById('vt-vscript'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ── Daily 3 checklist ──
+const DAILY3=[
+  'Reply to 10 comments on your own posts (turn commenters into loyal fans)',
+  'Drop a bold comment on 5 big creators in Creator Radar',
+  'Post 1 reaction/repost tied to a trending topic from Pulse',
+];
+function daily3Key(){ return 'pulse_daily_'+new Date().toISOString().slice(0,10); }
+function renderDaily3(){
+  const done=JSON.parse(localStorage.getItem(daily3Key())||'[]');
+  const list=document.getElementById('daily3-list'); if(!list) return;
+  const dd=document.getElementById('daily3-date'); if(dd) dd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  list.innerHTML=DAILY3.map((task,i)=>{
+    const checked=done.includes(i);
+    return `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--r-sm);margin-bottom:8px;cursor:pointer;${checked?'opacity:0.55;':''}">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleDaily3(${i})" style="width:18px;height:18px;accent-color:var(--green);">
+      <span style="font-size:13px;${checked?'text-decoration:line-through;':''}">${task}</span>
+    </label>`;
+  }).join('');
+  const pct=Math.round(done.length/DAILY3.length*100);
+  const pr=document.getElementById('daily3-progress');
+  if(pr) pr.textContent=done.length===DAILY3.length?'🎉 All done today — this is how you win. Come back tomorrow.':`${done.length}/${DAILY3.length} done (${pct}%)`;
+}
+function toggleDaily3(i){
+  const k=daily3Key(); let done=JSON.parse(localStorage.getItem(k)||'[]');
+  if(done.includes(i)) done=done.filter(x=>x!==i); else done.push(i);
+  localStorage.setItem(k,JSON.stringify(done)); renderDaily3();
+}
+
+// ════════ BEST TIME TO POST ════════
+// Research-backed default windows (local time). Each: {h:hour24, lvl:1-3 strength, note}
+const BEST_TIMES={
+  instagram:{label:'📸 Instagram',weekday:[{h:7,lvl:2},{h:12,lvl:2},{h:18,lvl:3},{h:21,lvl:2}],weekend:[{h:10,lvl:3},{h:13,lvl:2},{h:19,lvl:2}]},
+  tiktok:{label:'🎵 TikTok',weekday:[{h:6,lvl:2},{h:10,lvl:2},{h:16,lvl:2},{h:19,lvl:3},{h:22,lvl:3}],weekend:[{h:9,lvl:2},{h:11,lvl:3},{h:20,lvl:3}]},
+  youtube:{label:'▶️ YouTube',weekday:[{h:14,lvl:2},{h:17,lvl:3},{h:20,lvl:2}],weekend:[{h:9,lvl:3},{h:11,lvl:2},{h:15,lvl:2}]},
+  x:{label:'𝕏 Twitter/X',weekday:[{h:8,lvl:3},{h:12,lvl:2},{h:17,lvl:2},{h:21,lvl:2}],weekend:[{h:9,lvl:2},{h:11,lvl:2}]}
+};
+let btPlat='instagram', btTimer=null;
+function fmtHour(h){ const ap=h<12?'AM':'PM'; let hr=h%12; if(hr===0)hr=12; return hr+' '+ap; }
+function isWeekend(d){ const g=d.getDay(); return g===0||g===6; }
+function todaySlots(plat,d){ return (isWeekend(d)?BEST_TIMES[plat].weekend:BEST_TIMES[plat].weekday); }
+function initBestTime(){
+  // populate hour dropdown once
+  const hs=document.getElementById('bt-log-hour');
+  if(hs&&!hs.options.length){ for(let h=0;h<24;h++){ const o=document.createElement('option'); o.value=h; o.textContent=fmtHour(h); hs.appendChild(o);} hs.value=new Date().getHours(); }
+  renderBestTime();
+  renderPersonal();
+  if(btTimer) clearInterval(btTimer);
+  btTimer=setInterval(updateBtCountdown,1000);
+}
+function setBtPlat(p){
+  btPlat=p;
+  document.querySelectorAll('#bt-plat-tabs button').forEach(b=>b.className=b.className.replace('btn-primary','btn-ghost'));
+  if(typeof event!=='undefined'&&event&&event.target) event.target.className=event.target.className.replace('btn-ghost','btn-primary');
+  renderBestTime();
+}
+function nextWindow(plat){
+  const now=new Date();
+  for(let dayOff=0;dayOff<7;dayOff++){
+    const d=new Date(now); d.setDate(now.getDate()+dayOff);
+    const slots=todaySlots(plat,d);
+    for(const s of slots){
+      const t=new Date(d); t.setHours(s.h,0,0,0);
+      if(t>now) return {time:t,lvl:s.lvl};
+    }
+  }
+  return null;
+}
+function renderBestTime(){
+  const now=new Date();
+  const nowEl=document.getElementById('bt-now'); if(nowEl) nowEl.textContent='Now: '+now.toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'});
+  const grid=document.getElementById('bt-grid'); if(!grid) return;
+  const slots=todaySlots(btPlat,now).slice().sort((a,b)=>a.h-b.h);
+  const curH=now.getHours();
+  grid.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;">${BEST_TIMES[btPlat].label} — best windows for <b>${isWeekend(now)?'weekend':'weekday'}</b> (${slots.length}):</div>`+
+    `<div style="display:flex;gap:8px;flex-wrap:wrap;">`+slots.map(s=>{
+      const live=s.h===curH;
+      const bars='▮'.repeat(s.lvl)+'<span style="opacity:.25;">'+'▮'.repeat(3-s.lvl)+'</span>';
+      return `<div style="flex:1;min-width:90px;text-align:center;background:${live?'rgba(0,200,120,.14)':'var(--bg3)'};border:1px solid ${live?'var(--green)':'var(--border)'};border-radius:var(--r-sm);padding:10px 6px;">
+        <div style="font-size:14px;font-weight:800;">${fmtHour(s.h)}</div>
+        <div style="font-size:11px;color:var(--orange);letter-spacing:1px;">${bars}</div>
+        ${live?'<div style="font-size:10px;font-weight:800;color:var(--green);margin-top:3px;">POST NOW</div>':''}
+      </div>`;
+    }).join('')+`</div>`;
+  updateBtCountdown();
+}
+function updateBtCountdown(){
+  const b=document.getElementById('bt-next-banner'); if(!b) return;
+  const nw=nextWindow(btPlat);
+  if(!nw){ b.innerHTML='<span style="font-size:13px;">No more windows scheduled — check back tomorrow.</span>'; return; }
+  const diff=nw.time-new Date();
+  if(diff<=0){ renderBestTime(); return; }
+  const hrs=Math.floor(diff/3.6e6), mins=Math.floor(diff%3.6e6/6e4), secs=Math.floor(diff%6e4/1000);
+  const cd=hrs>0?`${hrs}h ${mins}m`:`${mins}m ${secs}s`;
+  const strength=['','decent','strong','prime'][nw.lvl];
+  const when=nw.time.toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'});
+  b.innerHTML=`<div style="font-size:11px;font-weight:800;color:var(--orange);letter-spacing:.5px;">⏳ NEXT ${strength.toUpperCase()} WINDOW · ${BEST_TIMES[btPlat].label}</div>
+    <div style="font-size:20px;font-weight:800;margin-top:2px;">in ${cd}</div>
+    <div style="font-size:12px;color:var(--text2);">${when} — have a clip ready 10 min early.</div>`;
+}
+// ── Personal performance logger ──
+function btLogKey(){ return 'pulse_post_log'; }
+function getPostLog(){ return JSON.parse(localStorage.getItem(btLogKey())||'[]'); }
+function logPost(){
+  const plat=document.getElementById('bt-log-plat').value;
+  const hour=parseInt(document.getElementById('bt-log-hour').value,10);
+  const views=parseInt(document.getElementById('bt-log-views').value,10);
+  if(isNaN(views)||views<0){ toast('Enter the views/reach for that post','error'); return; }
+  const log=getPostLog(); log.push({plat,hour,views,ts:Date.now()});
+  localStorage.setItem(btLogKey(),JSON.stringify(log));
+  document.getElementById('bt-log-views').value='';
+  toast('Logged! Your real best hours update below.','success');
+  renderPersonal();
+}
+function renderPersonal(){
+  const el=document.getElementById('bt-personal'); if(!el) return;
+  const log=getPostLog();
+  if(log.length<3){ el.innerHTML=`<div style="font-size:12px;color:var(--text3);">📊 Log ${3-log.length} more post${3-log.length===1?'':'s'} to unlock YOUR personal best hours.</div>`; return; }
+  // average views per (platform,hour-bucket)
+  const buckets={};
+  log.forEach(p=>{ const key=p.plat+'|'+p.hour; (buckets[key]=buckets[key]||[]).push(p.views); });
+  const rows=Object.keys(buckets).map(k=>{ const[plat,h]=k.split('|'); const v=buckets[k]; return {plat,h:+h,avg:v.reduce((a,b)=>a+b,0)/v.length,n:v.length}; });
+  rows.sort((a,b)=>b.avg-a.avg);
+  const platIcon={instagram:'📸',tiktok:'🎵',youtube:'▶️',x:'𝕏'};
+  const top=rows.slice(0,4);
+  el.innerHTML=`<div style="font-size:12px;font-weight:800;color:var(--green);margin-bottom:8px;">🏆 YOUR real best hours (from ${log.length} logged posts)</div>`+
+    top.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:var(--r-sm);margin-bottom:6px;">
+      <span style="font-size:14px;font-weight:800;color:${i===0?'var(--orange)':'var(--text3)'};">#${i+1}</span>
+      <span style="font-size:13px;font-weight:700;">${platIcon[r.plat]||''} ${fmtHour(r.h)}</span>
+      <span style="font-size:12px;color:var(--text2);margin-left:auto;">avg ${fmtN(Math.round(r.avg))} views · ${r.n} post${r.n===1?'':'s'}</span>
+    </div>`).join('')+
+    `<button class="btn btn-ghost btn-xs" onclick="clearPostLog()" style="margin-top:4px;">Clear log</button>`;
+}
+function clearPostLog(){ if(confirm('Clear all your logged posts?')){ localStorage.removeItem(btLogKey()); renderPersonal(); } }
 
 
 </script>
