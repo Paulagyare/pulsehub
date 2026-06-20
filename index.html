@@ -764,6 +764,10 @@ input,textarea,select{font-family:inherit;}
         <span style="font-size:15px;font-weight:800;">📈 Growth Tracker</span>
         <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Log weekly, watch the curve climb</span>
       </button>
+      <button class="btn btn-secondary" style="flex-direction:column;align-items:flex-start;text-align:left;padding:14px;height:auto;" onclick="openAnime('')">
+        <span style="font-size:15px;font-weight:800;">🎨 Anime Image</span>
+        <span style="font-size:11px;color:var(--text3);font-weight:500;margin-top:3px;">Real AI anime art, free — no key</span>
+      </button>
     </div>
   </div>
 
@@ -4462,6 +4466,7 @@ async function renderPulseTrending(force){
       <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px;">
         <button class="btn btn-primary btn-xs" onclick="genFromNews('${safe}')">✨ Post</button>
         <button class="btn btn-secondary btn-xs" onclick="openGraphic('${safe}','${item.cat||''}')">🖼️ Graphic</button>
+        <button class="btn btn-secondary btn-xs" onclick="openAnime('${safe}')">🎨 Anime</button>
         <button class="btn btn-secondary btn-xs" onclick="openCrosspost('${safe}')">🔁 All platforms</button>
         <button class="btn btn-secondary btn-xs" onclick="videoFromTrend('${safe}')">🎬 Video</button>
       </div>
@@ -4750,6 +4755,90 @@ function ensureModal(id){
   return ov;
 }
 function copyText(t,msg){ navigator.clipboard.writeText(t).then(()=>toast(msg||'Copied!','success')).catch(()=>toast('Copy failed','error')); }
+
+// ════════ ANIME IMAGE MAKER (free AI image — no key needed) ════════
+const ANIME_STYLES={
+  anime:{name:'🎌 Anime',   tag:'anime style illustration, vibrant saturated colors, cinematic dramatic lighting, highly detailed, sharp, trending on pixiv'},
+  manga:{name:'📖 Manga B&W',tag:'black and white manga panel, bold ink lines, screentone shading, dynamic, dramatic'},
+  soft: {name:'🌸 Soft',    tag:'soft anime, watercolor, whimsical, warm gentle lighting, studio ghibli inspired, beautiful scenery'},
+  neon: {name:'🌃 Cyberpunk',tag:'cyberpunk anime, glowing neon lights, futuristic city, rain, cinematic, ultra detailed'},
+  chibi:{name:'🧸 Chibi',    tag:'cute chibi anime character, kawaii, big expressive eyes, simple clean background'}
+};
+const ANIME_SIZES={ portrait:{w:1024,h:1280,label:'Feed 4:5'}, square:{w:1024,h:1024,label:'Square 1:1'}, story:{w:1024,h:1820,label:'Story 9:16'} };
+let animeState={topic:'',style:'anime',size:'portrait',seed:Math.floor(Math.random()*1e6)};
+function openAnime(topic){
+  animeState={topic:topic||'',style:'anime',size:'portrait',seed:Math.floor(Math.random()*1e6)};
+  const ov=ensureModal('anime-modal');
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:18px;width:min(840px,96vw);max-height:94vh;overflow:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:16px;">🎨 Anime image maker</h3>
+      <button class="btn btn-ghost btn-xs" onclick="document.getElementById('anime-modal').remove()">✕</button>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;">
+      <div style="flex:0 0 auto;text-align:center;">
+        <div id="anime-stage" style="width:280px;aspect-ratio:4/5;border-radius:10px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
+          <div style="color:var(--text3);font-size:12px;padding:20px;">Describe a scene → Generate</div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="renderAnime()">✨ Generate</button>
+          <button class="btn btn-secondary btn-sm" onclick="animeVariation()">🎲 New version</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadAnime()">⬇ Download</button>
+        </div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <label class="form-label">What should the picture show?</label>
+        <textarea id="anime-topic" class="input textarea" rows="3" oninput="animeState.topic=this.value" placeholder="e.g. a furious driver in a car, dramatic" style="margin-bottom:6px;">${(topic||'').replace(/</g,'&lt;')}</textarea>
+        <button class="btn btn-ghost btn-xs" onclick="improveAnime()" style="margin-bottom:12px;">🤖 Turn this trend into a vivid scene (AI)</button>
+        <label class="form-label">Art style</label>
+        <div id="anime-styles" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          ${Object.keys(ANIME_STYLES).map(k=>`<button class="btn btn-xs ${k==='anime'?'btn-primary':'btn-ghost'}" data-as="${k}" onclick="setAnimeStyle('${k}')">${ANIME_STYLES[k].name}</button>`).join('')}
+        </div>
+        <label class="form-label">Size</label>
+        <div id="anime-sizes" style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${Object.keys(ANIME_SIZES).map(k=>`<button class="btn btn-xs ${k==='portrait'?'btn-primary':'btn-ghost'}" data-az="${k}" onclick="setAnimeSize('${k}')">${ANIME_SIZES[k].label}</button>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:12px;">Real AI anime art, free — no key needed. First image can take 10–20s. Hit "New version" for a different take on the same idea.</div>
+      </div>
+    </div>
+  </div>`;
+}
+function setAnimeStyle(k){ animeState.style=k; document.querySelectorAll('#anime-styles button').forEach(b=>b.className='btn btn-xs '+(b.dataset.as===k?'btn-primary':'btn-ghost')); }
+function setAnimeSize(k){ animeState.size=k; const sz=ANIME_SIZES[k]; const st=document.getElementById('anime-stage'); if(st) st.style.aspectRatio=sz.w+'/'+sz.h; document.querySelectorAll('#anime-sizes button').forEach(b=>b.className='btn btn-xs '+(b.dataset.az===k?'btn-primary':'btn-ghost')); }
+function animeVariation(){ animeState.seed=Math.floor(Math.random()*1e6); renderAnime(); }
+function buildAnimePrompt(){
+  const topic=(animeState.topic||'').trim();
+  const tag=ANIME_STYLES[animeState.style].tag;
+  return (topic?topic+', ':'')+tag+', no text, no watermark, masterpiece';
+}
+function animeUrl(){
+  const sz=ANIME_SIZES[animeState.size];
+  const p=encodeURIComponent(buildAnimePrompt());
+  return `https://image.pollinations.ai/prompt/${p}?width=${sz.w}&height=${sz.h}&seed=${animeState.seed}&nologo=true&model=flux`;
+}
+function renderAnime(){
+  if(!(animeState.topic||'').trim()){ toast('Describe what the picture should show first','error'); return; }
+  const stage=document.getElementById('anime-stage'); if(!stage) return;
+  const url=animeUrl();
+  stage.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);font-size:12px;gap:8px;"><span class="spinner"></span>Drawing your anime…</div>`;
+  const img=new Image(); img.crossOrigin='anonymous';
+  img.onload=()=>{ stage.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; img.id='anime-img'; stage.appendChild(img); };
+  img.onerror=()=>{ stage.innerHTML=`<div style="color:var(--red);font-size:12px;padding:18px;text-align:center;">Couldn't load — tap Generate again.<br><a href="${url}" target="_blank" style="color:var(--orange);">Open image ↗</a></div>`; };
+  img.src=url; animeState._url=url;
+}
+async function improveAnime(){
+  const ta=document.getElementById('anime-topic'); const t=(ta.value||'').trim();
+  if(!t){ toast('Type the trend or idea first','error'); return; }
+  toast('Writing a vivid scene…','success');
+  try{
+    const r=await callClaude(`Turn this headline/idea into ONE short vivid visual scene for an anime illustration (people, action, setting, mood). Max 30 words. No hashtags, no quotes, just the scene description.\n\nIdea: "${t}"`);
+    ta.value=r.replace(/^["']|["']$/g,'').trim(); animeState.topic=ta.value; toast('Scene ready — hit Generate','success');
+  }catch(e){ toast(e.message+' — add your API key in Settings (optional, only for this button)','error'); }
+}
+async function downloadAnime(){
+  const url=animeState._url; if(!url){ toast('Generate an image first','error'); return; }
+  try{ const r=await fetch(url); const b=await r.blob(); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download='offscript_anime_'+Date.now()+'.png'; a.click(); URL.revokeObjectURL(u); toast('Anime image downloaded!','success'); }
+  catch(e){ window.open(url,'_blank'); toast('Opened in new tab — long-press / right-click to save','success'); }
+}
 
 // ════════ 1. CROSS-POSTER ════════
 let _xp=[];
