@@ -656,7 +656,6 @@ input,textarea,select{font-family:inherit;}
     <button class="btn btn-ghost btn-sm" onclick="filterNews('global',this)">🌐 Global</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('world',this)">🌍 World</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('viral',this)">🔥 Viral</button>
-    <button class="btn btn-ghost btn-sm" onclick="filterNews('politics',this)">🏛️ Politics</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('celebrity',this)">⭐ Celebrity</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('music',this)">🎵 Music</button>
     <button class="btn btn-ghost btn-sm" onclick="filterNews('tech',this)">💻 Tech</button>
@@ -722,8 +721,8 @@ input,textarea,select{font-family:inherit;}
   <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:16px;">
     <div style="font-size:12px;color:var(--text2);"><b style="color:var(--text);">Coverage mode</b> — controls what topics the AI will write about across the app.</div>
     <div style="display:flex;gap:6px;" id="topic-mode-tabs">
-      <button class="btn btn-xs" id="tm-everything" onclick="setTopicMode('everything')">🔥 Everything (viral + politics)</button>
-      <button class="btn btn-xs" id="tm-safe" onclick="setTopicMode('safe')">🛡️ Safe (no politics)</button>
+      <button class="btn btn-xs" id="tm-everything" onclick="setTopicMode('everything')">🔥 Everything (no US politics)</button>
+      <button class="btn btn-xs" id="tm-safe" onclick="setTopicMode('safe')">🛡️ Safe (brand-friendly)</button>
     </div>
   </div>
 
@@ -792,8 +791,8 @@ input,textarea,select{font-family:inherit;}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="pulse-trend-tabs">
       <button class="btn btn-primary btn-xs" onclick="setPulseTrendCat('all')">🌍 All</button>
       <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('viral')">🔥 Viral</button>
-      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('politics')">🏛️ Politics</button>
       <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('celebrity')">⭐ Celebrity</button>
+      <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('entertainment')">🎬 Movies/TV</button>
       <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('sports')">⚽ Sports</button>
       <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('music')">🎵 Music</button>
       <button class="btn btn-ghost btn-xs" onclick="setPulseTrendCat('world')">🌐 World</button>
@@ -2310,8 +2309,11 @@ const ALL_FEEDS = [
   { url:'https://pitchfork.com/rss/news/feed.xml',                 name:'Pitchfork',         cat:'entertainment', icon:'🎵' },
   { url:'https://www.rollingstone.com/music/music-news/feed/',     name:'Rolling Stone',     cat:'entertainment', icon:'🎵' },
 
-  // ⚽ SPORTS
+  // ⚽ SPORTS / WORLD CUP / FOOTBALL
   { url:'https://www.espn.com/espn/rss/news',                      name:'ESPN',              cat:'sports', icon:'⚽' },
+  { url:'https://www.espn.com/espn/rss/soccer/news',               name:'ESPN Soccer',       cat:'sports', icon:'⚽' },
+  { url:'http://feeds.bbci.co.uk/sport/rss.xml',                   name:'BBC Sport',         cat:'sports', icon:'⚽' },
+  { url:'https://www.theguardian.com/football/rss',               name:'Guardian Football', cat:'sports', icon:'⚽' },
   { url:'https://bleacherreport.com/articles/feed',                name:'Bleacher Report',   cat:'sports', icon:'⚽' },
   { url:'https://www.skysports.com/rss/12040',                     name:'Sky Sports',        cat:'sports', icon:'⚽' },
   { url:'https://www.goal.com/feeds/en/news',                      name:'Goal.com',          cat:'sports', icon:'⚽' },
@@ -2346,17 +2348,14 @@ const ALL_FEEDS = [
   { url:'https://mashable.com/feeds/rss/all',                      name:'Mashable',          cat:'viral', icon:'🔥' },
   { url:'https://www.dailydot.com/feed/',                          name:'Daily Dot',         cat:'viral', icon:'🔥' },
 
-  // 🌐 WORLD / BREAKING
+  // 🌐 WORLD / BREAKING / WHAT'S HAPPENING IN COUNTRIES
   { url:'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en',   name:'Google News',       cat:'world', icon:'🌐' },
   { url:'https://www.aljazeera.com/xml/rss/all.xml',               name:'Al Jazeera',        cat:'world', icon:'🌐' },
   { url:'https://feeds.skynews.com/feeds/rss/world.xml',           name:'Sky News',          cat:'world', icon:'🌐' },
   { url:'https://www.theguardian.com/world/rss',                   name:'Guardian World',    cat:'world', icon:'🌐' },
-
-  // 🏛️ POLITICS (controversy = engagement — read the room)
-  { url:'https://www.politico.com/rss/politicopicks.xml',          name:'Politico',          cat:'politics', icon:'🏛️' },
-  { url:'https://thehill.com/news/feed/',                          name:'The Hill',          cat:'politics', icon:'🏛️' },
-  { url:'http://feeds.bbci.co.uk/news/politics/rss.xml',           name:'BBC Politics',      cat:'politics', icon:'🏛️' },
-  { url:'https://www.theguardian.com/politics/rss',               name:'Guardian Politics', cat:'politics', icon:'🏛️' },
+  { url:'http://feeds.bbci.co.uk/news/world/africa/rss.xml',       name:'BBC Africa',        cat:'world', icon:'🌍' },
+  { url:'http://feeds.bbci.co.uk/news/world/europe/rss.xml',       name:'BBC Europe',        cat:'world', icon:'🌍' },
+  { url:'http://feeds.bbci.co.uk/news/world/asia/rss.xml',         name:'BBC Asia',          cat:'world', icon:'🌏' },
 
   // ⭐ CELEBRITY / DRAMA
   { url:'https://pagesix.com/feed/',                               name:'Page Six',          cat:'celebrity', icon:'⭐' },
@@ -2379,6 +2378,30 @@ const CAT_COLORS = {
   celebrity:'badge-yellow', music:'badge-purple'
 };
 
+// pull first <img> src out of an HTML blob
+function imgFromHtml(html){ if(!html) return ''; const m=String(html).match(/<img[^>]+src=["']([^"']+)["']/i); return m?m[1]:''; }
+// pull an image URL out of an RSS/Atom <item> element
+function imgFromXml(item){
+  try{
+    const mc=item.getElementsByTagName('media:content')[0]||item.getElementsByTagName('media:thumbnail')[0];
+    if(mc&&mc.getAttribute('url')) return mc.getAttribute('url');
+    const enc=item.getElementsByTagName('enclosure')[0];
+    if(enc){ const u=enc.getAttribute('url')||''; const ty=enc.getAttribute('type')||''; if(/image/i.test(ty)||/\.(jpe?g|png|webp|gif)/i.test(u)) return u; }
+    const ce=item.getElementsByTagName('content:encoded')[0];
+    const fromCe=imgFromHtml(ce&&ce.textContent);
+    if(fromCe) return fromCe;
+    const desc=item.querySelector('description, summary, content')?.textContent||'';
+    return imgFromHtml(desc);
+  }catch(e){ return ''; }
+}
+// US-politics filter — drops stories about US politicians/elections/parties from ANY source
+const US_POL=/\b(trump|biden|kamala|harris|obama|desantis|newsom|pelosi|mcconnell|aoc|vance|gop|maga|democrat|republican|congress|senate|white house|capitol hill|filibuster|impeach|midterm|primaries|electoral|swing state|supreme court|scotus|roe v|second amendment|border wall|january 6|jan\. 6|potus)\b/i;
+function isUSPolitics(item){
+  if(!item) return false;
+  if(item.cat==='politics') return true;
+  return US_POL.test(item.title||'');
+}
+
 async function fetchOneFeed(feed) {
   const proxies = [
     `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
@@ -2398,6 +2421,7 @@ async function fetchOneFeed(feed) {
           title: (item.title||'').replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"').replace(/<[^>]+>/g,''),
           link: item.link || '#',
           source: feed.name, cat: feed.cat, icon: feed.icon,
+          image: item.thumbnail || item.enclosure?.link || imgFromHtml(item.content) || imgFromHtml(item.description) || '',
           date: timeAgo(new Date(item.pubDate)),
           pubDate: new Date(item.pubDate),
         }));
@@ -2419,6 +2443,7 @@ async function fetchOneFeed(feed) {
             return {
               title: title.replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"'),
               link, source: feed.name, cat: feed.cat, icon: feed.icon,
+              image: imgFromXml(item),
               date: timeAgo(pubDate), pubDate,
             };
           }).filter(i => i.title);
@@ -2432,7 +2457,8 @@ async function fetchOneFeed(feed) {
 async function fetchLiveNews() {
   // Fetch all feeds in parallel, prioritize faster ones
   const results = await Promise.allSettled(ALL_FEEDS.map(fetchOneFeed));
-  const all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  let all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  all = all.filter(i => !isUSPolitics(i));   // strip US politics from every source
   all.sort((a,b) => b.pubDate - a.pubDate);
   allNewsCache = all;
   return all;
@@ -2519,8 +2545,9 @@ function renderNewsItems(el, items, compact) {
   }
   el.innerHTML = shown.map(item => {
     const safe = item.title.replace(/'/g,'').replace(/"/g,'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const thumb = item.image ? `<img src="${item.image}" loading="lazy" onerror="this.style.display='none'" style="width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--border);flex-shrink:0;background:var(--bg3);">` : `<div class="trend-ico" style="font-size:20px;">${item.icon||'📰'}</div>`;
     return `<div class="trend-item">
-      <div class="trend-ico" style="font-size:20px;">${item.icon||'📰'}</div>
+      ${thumb}
       <div class="trend-body">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
           <span class="badge ${CAT_COLORS[item.cat]||'badge-blue'}">${item.cat?.toUpperCase()}</span>
@@ -2555,7 +2582,7 @@ async function callClaude(prompt, systemExtra='') {
   const topicMode = localStorage.getItem('offscript_topic_mode') || 'everything';
   const coverage = topicMode === 'safe'
     ? `OffScript Media covers: entertainment, sports, gaming, tech, Ghana news, US news (non-political), global events, business, cybersecurity. NEVER covers politics, politicians, political parties, elections, or political debates. If a trending story is political, skip it and find a different angle.`
-    : `OffScript Media is a fast, bold media brand that covers EVERYTHING trending and viral worldwide — entertainment, sports, gaming, tech, music, celebrity drama, world news, politics, internet culture, Ghana and US news. Lead with whatever is hottest right now and take a clear, confident angle to capture attention and spark comments. You CAN cover political and controversial trending topics. Hard limits: no hate speech, no slurs, no harassment of private individuals, and never state false claims as fact. When a topic is legally or reputationally risky, add a short "⚠️ heads-up" line so Paul can decide. Otherwise, go for maximum attention, shares and engagement.`;
+    : `OffScript Media is a fast, bold media brand that covers what is trending and viral worldwide — entertainment, sports (World Cup, football, big games), gaming, tech, music, celebrity drama, world news and what is happening in different countries, internet culture, Ghana news. Lead with whatever is hottest right now and take a clear, confident angle to capture attention and spark comments. HARD RULE: do NOT cover US politics — no US politicians, parties, elections, or political debates (Trump, Biden, Congress, GOP/Democrats, etc.). Other hard limits: no hate speech, no slurs, no harassment of private individuals, and never state false claims as fact. When a topic is legally or reputationally risky, add a short "⚠️ heads-up" line so Paul can decide. Otherwise, go for maximum attention, shares and engagement.`;
   const system = `You are the AI writing assistant for OffScript Media, a media brand created by Paul Agyare, based in Mountain Time, US.
 
 Brand voice: ${brandVoice}
@@ -4356,7 +4383,7 @@ function syncTopicModeUI(){
 async function callPulse(prompt){
   const key=localStorage.getItem('offscript_api_key')||apiKey||BAKED_KEY;
   const mode=getTopicMode();
-  const system=`You are the head of growth and social strategy for OffScript Media, run by Paul Agyare (Mountain Time, US). His ONLY goal is fast growth — more followers, views, comments and shares across TikTok, Instagram Reels, YouTube and X. Be a sharp, specific, no-fluff strategist. ${mode==='everything'?'Cover anything trending and viral worldwide including politics, celebrity drama and controversy — controversy drives comments. Hard limits: no hate speech, no slurs, no harassment of private individuals, never state false claims as fact. Flag legally or reputationally risky moves with a short ⚠️ note so he can choose.':'Keep all recommendations non-political and brand-safe.'} Always be concrete: name the platform, the format, the hook, the best posting time, and the exact next action. Keep it short, punchy and scannable.`;
+  const system=`You are the head of growth and social strategy for OffScript Media, run by Paul Agyare (Mountain Time, US). His ONLY goal is fast growth — more followers, views, comments and shares across TikTok, Instagram Reels, YouTube and X. Be a sharp, specific, no-fluff strategist. ${mode==='everything'?'Cover anything trending and viral worldwide — sports (World Cup, football), celebrity drama, entertainment, world events and country news — controversy drives comments. HARD RULE: never recommend US politics topics (US politicians, parties, elections). Other hard limits: no hate speech, no slurs, no harassment of private individuals, never state false claims as fact. Flag legally or reputationally risky moves with a short ⚠️ note so he can choose.':'Keep all recommendations non-political and brand-safe.'} Always be concrete: name the platform, the format, the hook, the best posting time, and the exact next action. Keep it short, punchy and scannable.`;
   const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system,messages:[{role:'user',content:prompt}]})});
   const data=await res.json();
   if(data.error) throw new Error(data.error.message);
@@ -4461,8 +4488,9 @@ async function renderPulseTrending(force){
     const safe=item.title.replace(/'/g,'').replace(/"/g,'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const sp=spiceLevel(item); const chili=sp>0?'🌶️'.repeat(sp):'·';
     const rank=(trendSort==='viral'&&i<3)?`<span style="font-size:11px;font-weight:800;color:var(--orange);">#${i+1} pick</span>`:'';
+    const thumb=item.image?`<img src="${item.image}" loading="lazy" onerror="this.style.display='none'" style="width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--border);flex-shrink:0;background:var(--bg3);">`:`<div class="trend-ico" style="font-size:20px;">${item.icon||'📰'}</div>`;
     return `<div class="trend-item">
-      <div class="trend-ico" style="font-size:20px;">${item.icon||'📰'}</div>
+      ${thumb}
       <div class="trend-body">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
           ${flameBadge(score)} ${rank}
