@@ -2402,52 +2402,68 @@ function isUSPolitics(item){
   return US_POL.test(item.title||'');
 }
 
+function parseFeedXml(xmlStr, feed){
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlStr, 'text/xml');
+  if (xml.querySelector('parsererror')) return [];
+  const items = [...xml.querySelectorAll('item, entry')].slice(0,6);
+  return items.map(item => {
+    const title = (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').trim();
+    const linkEl = item.querySelector('link');
+    const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || '#';
+    const pubRaw = item.querySelector('pubDate, published, updated, date')?.textContent || '';
+    const pubDate = pubRaw ? new Date(pubRaw) : new Date();
+    return {
+      title: title.replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"'),
+      link, source: feed.name, cat: feed.cat, icon: feed.icon,
+      image: imgFromXml(item),
+      date: timeAgo(pubDate), pubDate: isNaN(pubDate)?new Date():pubDate,
+    };
+  }).filter(i => i.title);
+}
+
 async function fetchOneFeed(feed) {
+  // Mix of proxies: some return the raw XML, one (rss2json) returns JSON, one (allorigins/get) wraps XML in JSON.
   const proxies = [
-    `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(feed.url)}`,
+    `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(feed.url)}`,
     `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=6`,
-    `https://corsproxy.io/?${encodeURIComponent(feed.url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(feed.url)}`,
   ];
 
   for (const proxyUrl of proxies) {
     try {
-      const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
+      const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(9000)});
       if (!res.ok) continue;
-      const raw = await res.json();
+      const body = await res.text();
+      if (!body) continue;
 
-      // rss2json format
-      if (raw.status === 'ok' && raw.items?.length) {
-        return raw.items.slice(0,6).map(item => ({
-          title: (item.title||'').replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"').replace(/<[^>]+>/g,''),
-          link: item.link || '#',
-          source: feed.name, cat: feed.cat, icon: feed.icon,
-          image: item.thumbnail || item.enclosure?.link || imgFromHtml(item.content) || imgFromHtml(item.description) || '',
-          date: timeAgo(new Date(item.pubDate)),
-          pubDate: new Date(item.pubDate),
-        }));
+      // Try JSON first (rss2json items, or allorigins/get .contents). If it isn't JSON, treat as raw XML.
+      let xmlStr = null;
+      const trimmed = body.trimStart();
+      if (trimmed.startsWith('{')) {
+        let j=null; try{ j=JSON.parse(body); }catch(e){ j=null; }
+        if (j) {
+          if (j.status === 'ok' && j.items?.length) {
+            return j.items.slice(0,6).map(item => ({
+              title: (item.title||'').replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"').replace(/<[^>]+>/g,''),
+              link: item.link || '#',
+              source: feed.name, cat: feed.cat, icon: feed.icon,
+              image: item.thumbnail || item.enclosure?.link || imgFromHtml(item.content) || imgFromHtml(item.description) || '',
+              date: timeAgo(new Date(item.pubDate)),
+              pubDate: new Date(item.pubDate),
+            }));
+          }
+          if (j.contents) xmlStr = j.contents;
+        }
+      } else {
+        xmlStr = body;
       }
 
-      // allorigins / corsproxy — raw XML string
-      const xmlStr = raw.contents || (typeof raw === 'string' ? raw : null);
       if (xmlStr) {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(xmlStr, 'text/xml');
-        const items = [...xml.querySelectorAll('item, entry')].slice(0,6);
-        if (items.length) {
-          return items.map(item => {
-            const title = (item.querySelector('title')?.textContent || '').replace(/<[^>]+>/g,'').trim();
-            const linkEl = item.querySelector('link');
-            const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || '#';
-            const pubRaw = item.querySelector('pubDate, published, updated')?.textContent || '';
-            const pubDate = pubRaw ? new Date(pubRaw) : new Date();
-            return {
-              title: title.replace(/&amp;/g,'&').replace(/&#039;/g,"'").replace(/&quot;/g,'"'),
-              link, source: feed.name, cat: feed.cat, icon: feed.icon,
-              image: imgFromXml(item),
-              date: timeAgo(pubDate), pubDate,
-            };
-          }).filter(i => i.title);
-        }
+        const parsed = parseFeedXml(xmlStr, feed);
+        if (parsed.length) return parsed;
       }
     } catch(e) { continue; }
   }
@@ -2455,9 +2471,17 @@ async function fetchOneFeed(feed) {
 }
 
 async function fetchLiveNews() {
-  // Fetch all feeds in parallel, prioritize faster ones
-  const results = await Promise.allSettled(ALL_FEEDS.map(fetchOneFeed));
-  let all = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  // Run feeds through a concurrency pool (max 8 at once) so we don't trip proxy rate limits
+  const queue = [...ALL_FEEDS];
+  const out = [];
+  async function worker() {
+    while (queue.length) {
+      const feed = queue.shift();
+      try { const r = await fetchOneFeed(feed); if (r && r.length) out.push(...r); } catch(e) {}
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(8, ALL_FEEDS.length)}, worker));
+  let all = out;
   all = all.filter(i => !isUSPolitics(i));   // strip US politics from every source
   all.sort((a,b) => b.pubDate - a.pubDate);
   allNewsCache = all;
